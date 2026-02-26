@@ -16,15 +16,15 @@ const HomeScreen: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen flex flex-col bg-background grain-overlay vignette pb-24">
+    <div className="min-h-[100dvh] flex flex-col mesh-bg noise-overlay vignette pb-24">
       {/* Header */}
       <div className="flex items-center justify-between px-5 pt-14 pb-5 relative z-10">
-        <h1 className="font-heading font-black text-2xl text-foreground">Vibly</h1>
+        <h1 className="font-heading font-extrabold text-2xl text-foreground">Vibly</h1>
         <div className="flex items-center gap-2">
-          <span className="bg-card inner-shadow border border-border rounded-pill px-3 py-1.5 text-xs font-body font-semibold text-foreground">
+          <span className="glass-card px-3 py-1.5 text-xs font-body font-semibold text-foreground">
             🔥 14
           </span>
-          <span className="bg-card inner-shadow border border-border rounded-pill px-3 py-1.5 text-xs font-body font-semibold text-foreground">
+          <span className="glass-card px-3 py-1.5 text-xs font-body font-semibold text-foreground">
             💕 247d
           </span>
         </div>
@@ -33,13 +33,13 @@ const HomeScreen: React.FC = () => {
       <div className="px-5 flex flex-col gap-4 relative z-10">
         {/* Distance banner */}
         <motion.div
-          className="card-cinematic border border-border rounded-card p-5 light-sweep"
+          className="glass-card-elevated p-5 light-sweep animate-breathe"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
         >
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-11 h-11 rounded-full bg-primary/15 flex items-center justify-center glow-pink">
+              <div className="w-11 h-11 rounded-full bg-primary/12 flex items-center justify-center glow-rose">
                 <span className="text-lg">📍</span>
               </div>
               <div>
@@ -62,13 +62,16 @@ const HomeScreen: React.FC = () => {
 
         {/* Daily Question */}
         <motion.div
-          className="bg-gradient-to-br from-card to-purple/[0.06] border border-border rounded-card p-6 card-shadow-deep inner-shadow relative overflow-hidden"
+          className="glass-card-elevated p-6 relative overflow-hidden"
+          style={{
+            background: "linear-gradient(135deg, hsla(240,29%,10%,0.6) 0%, hsla(263,86%,76%,0.06) 100%)",
+          }}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
         >
-          {/* Subtle purple glow edge */}
-          <div className="absolute -top-px left-1/4 right-1/4 h-px bg-gradient-to-r from-transparent via-purple/25 to-transparent" />
+          {/* Subtle edge glow */}
+          <div className="absolute -top-px left-1/4 right-1/4 h-px bg-gradient-to-r from-transparent via-lavender/20 to-transparent" />
 
           <p className="text-[10px] font-body font-semibold text-muted-foreground tracking-widest uppercase mb-3">
             TODAY'S QUESTION
@@ -97,7 +100,7 @@ const HomeScreen: React.FC = () => {
 
       {/* Floating Tab Bar */}
       <div className="fixed bottom-6 left-1/2 -translate-x-1/2 w-[calc(100%-40px)] max-w-[390px] z-50">
-        <div className="bg-card/80 frosted-strong border border-border rounded-pill p-1.5 flex items-center justify-around card-shadow-deep inner-shadow">
+        <div className="glass-card-elevated p-1.5 flex items-center justify-around !rounded-pill">
           {[
             { id: "today" as const, emoji: "💬", label: "Today" },
             { id: "mood" as const, emoji: "😊", label: "Mood" },
@@ -111,7 +114,7 @@ const HomeScreen: React.FC = () => {
               }}
               className={`flex items-center gap-1.5 px-5 py-2.5 rounded-pill text-sm font-body font-medium transition-all duration-200 ${
                 activeTab === tab.id
-                  ? "bg-primary/15 text-primary glow-pink"
+                  ? "bg-primary/12 text-primary glow-rose"
                   : "text-muted-foreground hover:text-foreground"
               }`}
             >

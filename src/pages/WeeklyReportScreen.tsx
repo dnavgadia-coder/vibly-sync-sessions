@@ -7,19 +7,16 @@ const WeeklyReportScreen: React.FC = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen flex flex-col items-center px-5 pt-14 pb-8 bg-background grain-overlay vignette">
+    <div className="min-h-[100dvh] flex flex-col items-center px-5 pt-14 pb-8 mesh-bg noise-overlay vignette">
       <div className="flex-1 flex flex-col items-center justify-center w-full relative z-10">
-        {/* Ambient glow */}
-        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-64 h-40 rounded-full bg-primary/8 blur-[80px] pointer-events-none" />
-
         <motion.div
-          className="w-full card-cinematic rounded-[22px] p-7 border border-border relative overflow-hidden"
+          className="w-full glass-card-elevated p-7 relative overflow-hidden light-sweep"
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ type: "spring", bounce: 0.3 }}
         >
           {/* Top edge glow */}
-          <div className="absolute -top-px left-1/4 right-1/4 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
+          <div className="absolute -top-px left-1/4 right-1/4 h-px bg-gradient-to-r from-transparent via-primary/25 to-transparent" />
 
           <p className="text-[10px] font-body font-semibold text-muted-foreground tracking-widest uppercase mb-1">
             WEEK 6 SYNC REPORT
@@ -31,19 +28,19 @@ const WeeklyReportScreen: React.FC = () => {
           {/* Stats row */}
           <div className="grid grid-cols-3 gap-3 mb-7">
             {[
-              { emoji: "🔥", value: "14", color: "text-accent text-glow-green" },
-              { emoji: "💕", value: "78%", color: "text-primary text-glow-pink" },
-              { emoji: "✅", value: "7/7", color: "text-purple" },
+              { emoji: "🔥", value: "14", color: "text-accent text-glow-mint" },
+              { emoji: "💕", value: "78%", color: "text-primary text-glow-rose" },
+              { emoji: "✅", value: "7/7", color: "text-lavender" },
             ].map((stat, i) => (
               <motion.div
                 key={i}
-                className="bg-secondary/30 rounded-option p-4 text-center inner-shadow"
+                className="glass-card p-4 text-center"
                 initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3 + i * 0.1 }}
               >
                 <p className="text-lg mb-1">{stat.emoji}</p>
-                <p className={`text-[28px] font-heading font-black tracking-tight ${stat.color}`}>
+                <p className={`text-[28px] font-heading font-extrabold tracking-tight ${stat.color}`}>
                   {stat.value}
                 </p>
               </motion.div>
@@ -57,7 +54,7 @@ const WeeklyReportScreen: React.FC = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.6 }}
           >
-            <span className="inline-block bg-accent/15 text-accent text-xs font-heading font-bold px-3 py-1 rounded-pill mb-2 glow-green">
+            <span className="inline-block bg-accent/12 text-accent text-xs font-heading font-bold px-3 py-1 rounded-pill mb-2 glow-mint">
               BEST MATCH ✨
             </span>
             <p className="text-[15px] font-body text-foreground leading-relaxed">
@@ -72,7 +69,7 @@ const WeeklyReportScreen: React.FC = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.7 }}
           >
-            <span className="inline-block bg-primary/15 text-primary text-xs font-heading font-bold px-3 py-1 rounded-pill mb-2 glow-pink">
+            <span className="inline-block bg-primary/12 text-primary text-xs font-heading font-bold px-3 py-1 rounded-pill mb-2 glow-rose">
               BIGGEST MISS 😂
             </span>
             <p className="text-[15px] font-body text-foreground leading-relaxed">
@@ -98,7 +95,7 @@ const WeeklyReportScreen: React.FC = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 1 }}
       >
-        <ViblyButton variant="green" onClick={() => navigate("/home")}>
+        <ViblyButton variant="mint" onClick={() => navigate("/home")}>
           Share to Stories →
         </ViblyButton>
       </motion.div>
