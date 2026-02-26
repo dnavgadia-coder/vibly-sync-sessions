@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { useProfile } from "@/hooks/useProfile";
 import { useDailyQuestion } from "@/hooks/useDailyQuestion";
 import OptionCard from "@/components/OptionCard";
+import DistanceBanner from "@/components/DistanceBanner";
 import MoodScreen from "@/pages/MoodScreen";
 import SettingsScreen from "@/pages/SettingsScreen";
 import { Settings } from "lucide-react";
@@ -58,37 +59,11 @@ const HomeScreen: React.FC = () => {
       <div className="px-5 flex flex-col gap-4 relative z-10">
         {/* Distance banner */}
         {profile?.partner_id && (
-          <motion.div
-            className="glass-card-elevated p-5 light-sweep animate-breathe"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-          >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-11 h-11 rounded-full bg-primary/12 flex items-center justify-center glow-rose">
-                  <span className="text-lg">📍</span>
-                </div>
-                <div>
-                  <p className="text-xs font-body text-muted-foreground mb-0.5">Distance apart</p>
-                  <p className="text-lg font-heading font-bold text-amber text-glow-amber">
-                    {distance !== null ? `${Math.round(distance)} km` : "—"}
-                  </p>
-                </div>
-              </div>
-              <div className="text-right">
-                <p className="text-xs font-body text-muted-foreground mb-0.5">
-                  {partner?.name ? `${partner.name}'s mood` : "Partner's mood"}
-                </p>
-                <motion.p
-                  className="text-2xl"
-                  animate={{ rotate: [0, 5, -5, 0] }}
-                  transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-                >
-                  {partner?.current_mood || "🔒"}
-                </motion.p>
-              </div>
-            </div>
-          </motion.div>
+          <DistanceBanner
+            distance={distance}
+            partnerName={partner?.name || "Partner"}
+            partnerMood={partner?.current_mood || null}
+          />
         )}
 
         {/* Not connected banner */}
