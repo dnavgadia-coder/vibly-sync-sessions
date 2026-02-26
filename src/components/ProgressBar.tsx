@@ -7,7 +7,7 @@ interface ProgressBarProps {
 
 const ProgressBar: React.FC<ProgressBarProps> = ({ progress }) => {
   return (
-    <div className="w-full h-1 bg-secondary rounded-pill overflow-hidden">
+    <div className="w-full h-[3px] bg-secondary/60 rounded-pill overflow-hidden mb-2">
       <motion.div
         className="h-full rounded-pill shimmer"
         initial={{ width: 0 }}
