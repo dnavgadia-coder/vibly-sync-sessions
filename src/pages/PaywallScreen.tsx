@@ -138,7 +138,7 @@ const PaywallScreen: React.FC = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.6 }}
         >
-          <ViblyButton variant="rose" onClick={() => navigate("/home")}>
+          <ViblyButton variant="rose" onClick={() => navigate("/auth")}>
             Continue →
           </ViblyButton>
         </motion.div>

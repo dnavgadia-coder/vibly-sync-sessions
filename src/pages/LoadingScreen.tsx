@@ -18,7 +18,7 @@ const LoadingScreen: React.FC = () => {
       setCurrentStep((prev) => {
         if (prev >= steps.length - 1) {
           clearInterval(interval);
-          setTimeout(() => navigate("/results"), 600);
+          setTimeout(() => navigate("/connect"), 600);
           return prev;
         }
         return prev + 1;
