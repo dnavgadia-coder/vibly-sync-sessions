@@ -21,14 +21,17 @@ const QuizScreen: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col px-5 pt-14 pb-8 bg-background grain-overlay">
+    <div className="min-h-screen flex flex-col px-5 pt-14 pb-8 bg-background grain-overlay vignette">
       <ProgressBar progress={15} />
 
-      <div className="flex-1 flex flex-col justify-center">
+      <div className="flex-1 flex flex-col justify-center relative z-10">
+        {/* Ambient glow behind question */}
+        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-48 h-48 rounded-full bg-primary/8 blur-[80px] pointer-events-none" />
+
         <AnimatePresence mode="wait">
           <motion.h2
             key="question"
-            className="font-heading font-bold text-[26px] text-foreground mb-8"
+            className="font-heading font-bold text-[28px] text-foreground mb-10 leading-tight"
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -15 }}
@@ -38,13 +41,13 @@ const QuizScreen: React.FC = () => {
           </motion.h2>
         </AnimatePresence>
 
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-2.5">
           {options.map((option, index) => (
             <motion.div
               key={index}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 + index * 0.08 }}
+              transition={{ delay: 0.15 + index * 0.08 }}
             >
               <OptionCard
                 emoji={option.emoji}

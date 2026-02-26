@@ -22,12 +22,16 @@ const InsightScreen: React.FC = () => {
   }, []);
 
   return (
-    <div className="min-h-screen flex flex-col px-5 pt-14 pb-8 bg-background grain-overlay">
+    <div className="min-h-screen flex flex-col px-5 pt-14 pb-8 bg-background grain-overlay vignette">
       <ProgressBar progress={30} />
 
-      <div className="flex-1 flex flex-col items-center justify-center text-center">
+      <div className="flex-1 flex flex-col items-center justify-center text-center relative z-10">
+        {/* Ambient glow behind stat */}
+        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-56 h-56 rounded-full bg-primary/10 blur-[100px] pointer-events-none" />
+        <div className="absolute top-[40%] left-1/2 -translate-x-1/2 w-32 h-32 rounded-full bg-purple/10 blur-[60px] pointer-events-none" />
+
         <motion.div
-          className="text-5xl mb-6"
+          className="text-5xl mb-8"
           initial={{ scale: 0.5, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ type: "spring", bounce: 0.5 }}
@@ -36,16 +40,16 @@ const InsightScreen: React.FC = () => {
         </motion.div>
 
         <motion.div
-          className="relative mb-4"
+          className="relative mb-6"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
         >
           {/* Glow behind number */}
-          <div className="absolute inset-0 text-gradient-pink-purple text-[48px] font-heading font-black blur-xl opacity-50">
+          <div className="absolute inset-0 text-gradient-pink-purple text-[56px] font-heading font-black blur-xl opacity-50">
             {count}%
           </div>
-          <span className="relative text-[48px] font-heading font-black text-gradient-pink-purple">
+          <span className="relative text-[56px] font-heading font-black text-gradient-pink-purple text-glow-pink">
             {count}%
           </span>
         </motion.div>
@@ -61,6 +65,7 @@ const InsightScreen: React.FC = () => {
       </div>
 
       <motion.div
+        className="relative z-10"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.8 }}

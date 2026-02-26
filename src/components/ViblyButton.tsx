@@ -15,15 +15,17 @@ const ViblyButton: React.FC<ViblyButtonProps> = ({ children, variant = "pink", o
       whileHover={{ scale: 1.02 }}
       onClick={onClick}
       className={`
-        w-full py-4 rounded-pill font-heading font-bold text-base tracking-wide
+        w-full py-4 rounded-pill font-heading font-bold text-base tracking-wide relative overflow-hidden
         ${variant === "pink"
-          ? "bg-gradient-pink text-primary-foreground glow-pink"
-          : "bg-gradient-green text-accent-foreground glow-green"
+          ? "bg-gradient-pink text-primary-foreground glow-pink-strong"
+          : "bg-gradient-green text-accent-foreground glow-green-strong"
         }
         ${className}
       `}
     >
-      {children}
+      {/* Subtle shine layer */}
+      <span className="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent pointer-events-none" />
+      <span className="relative z-[1]">{children}</span>
     </motion.button>
   );
 };
