@@ -32,17 +32,34 @@ const AuthScreen: React.FC = () => {
       });
 
       if (!signInErr) {
-        navigate("/home");
+        // Existing user — check if onboarding is complete
+        const { data: prof } = await supabase
+          .from("profiles")
+          .select("name")
+          .eq("id", (await supabase.auth.getUser()).data.user!.id)
+          .maybeSingle();
+
+        navigate(prof?.name ? "/home" : "/name");
         return;
       }
 
-      // If invalid credentials, try sign up
-      const { error: signUpErr } = await supabase.auth.signUp({
+      // If sign-in failed, try sign up
+      const { data: signUpData, error: signUpErr } = await supabase.auth.signUp({
         email: trimmed,
         password: FALLBACK_PWD,
       });
 
+      // signUp returns a user with no identities if email already exists (no error thrown)
       if (signUpErr) throw signUpErr;
+
+      // Check for fake signup (user already exists but signUp didn't error)
+      const identities = signUpData.user?.identities;
+      if (!identities || identities.length === 0) {
+        // Email exists but password didn't match — treat as "already registered"
+        toast.error("Account exists. Please try again.");
+        return;
+      }
+
       navigate("/name");
     } catch (err: any) {
       toast.error(err.message || "Something went wrong");
