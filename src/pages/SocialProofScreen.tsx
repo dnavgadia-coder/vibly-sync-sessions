@@ -14,14 +14,15 @@ const SocialProofScreen: React.FC = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen flex flex-col px-5 pt-14 pb-8 bg-background grain-overlay vignette">
-      <ProgressBar progress={45} />
+    <div className="min-h-[100dvh] flex flex-col px-5 pt-14 pb-8 mesh-bg noise-overlay vignette">
+      <ProgressBar progress={45} step={6} totalSteps={12} />
 
       <div className="flex-1 flex flex-col justify-center relative z-10">
         <motion.h2
           className="font-heading font-bold text-[26px] text-foreground text-center mb-10"
-          initial={{ opacity: 0, y: 15 }}
+          initial={{ opacity: 0, y: -8 }}
           animate={{ opacity: 1, y: 0 }}
+          transition={{ ease: [0.34, 1.56, 0.64, 1] }}
         >
           Join 200,000+ couples
         </motion.h2>
@@ -30,14 +31,14 @@ const SocialProofScreen: React.FC = () => {
           {reviews.map((review, index) => (
             <motion.div
               key={index}
-              className="card-cinematic border border-border rounded-option p-5"
+              className="glass-card-elevated p-5 light-sweep"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.15 + index * 0.1 }}
+              transition={{ delay: 0.15 + index * 0.1, ease: [0.34, 1.56, 0.64, 1] }}
             >
               <div className="text-amber text-sm mb-2.5 text-glow-amber">⭐⭐⭐⭐⭐</div>
-              <p className="text-[15px] font-body text-foreground mb-1.5 leading-relaxed">"{review.quote}"</p>
-              <p className="text-xs font-body text-muted-foreground">— {review.name}</p>
+              <p className="text-[15px] font-body text-foreground mb-2 leading-relaxed">"{review.quote}"</p>
+              <p className="text-xs font-body text-muted-foreground text-right">{review.name}</p>
             </motion.div>
           ))}
         </div>
