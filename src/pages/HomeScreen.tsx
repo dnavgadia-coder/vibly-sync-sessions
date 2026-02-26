@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { useProfile } from "@/hooks/useProfile";
 import { useDailyQuestion } from "@/hooks/useDailyQuestion";
+import { useLocationTracking } from "@/hooks/useLocationTracking";
 import OptionCard from "@/components/OptionCard";
 import DistanceBanner from "@/components/DistanceBanner";
 import MoodScreen from "@/pages/MoodScreen";
@@ -16,6 +17,7 @@ const HomeScreen: React.FC = () => {
   const [activeTab, setActiveTab] = useState<TabId>("today");
   const { profile, partner, distance, daysCount, loading: profileLoading } = useProfile();
   const { question, myAnswer, partnerAnswered, partnerAnswer, submitting, submitAnswer } = useDailyQuestion();
+  useLocationTracking();
 
   const handleAnswer = (index: number) => {
     if (myAnswer !== null || !question) return;
