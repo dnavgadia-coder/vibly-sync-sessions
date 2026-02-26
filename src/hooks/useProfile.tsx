@@ -34,12 +34,11 @@ export function useProfile() {
   const fetchData = async () => {
     if (!user) { setLoading(false); return; }
 
-    // Fetch own profile
     const { data: prof } = await supabase
       .from("profiles")
       .select("*")
       .eq("id", user.id)
-      .single();
+      .maybeSingle();
 
     if (!prof) { setLoading(false); return; }
     setProfile(prof as Profile);
@@ -48,11 +47,11 @@ export function useProfile() {
     if (prof.start_date) {
       const start = new Date(prof.start_date);
       const now = new Date();
-      setDaysCount(Math.floor((now.getTime() - start.getTime()) / 86400000));
+      setDaysCount(Math.max(1, Math.floor((now.getTime() - start.getTime()) / 86400000)));
     } else if (prof.created_at) {
       const start = new Date(prof.created_at);
       const now = new Date();
-      setDaysCount(Math.floor((now.getTime() - start.getTime()) / 86400000));
+      setDaysCount(Math.max(1, Math.floor((now.getTime() - start.getTime()) / 86400000)));
     }
 
     // Fetch partner if linked
@@ -61,7 +60,7 @@ export function useProfile() {
         .from("profiles")
         .select("name, current_mood")
         .eq("id", prof.partner_id)
-        .single();
+        .maybeSingle();
       if (partnerData) setPartner(partnerData);
     }
 
@@ -71,7 +70,7 @@ export function useProfile() {
         .from("couples")
         .select("distance_km")
         .eq("id", prof.couple_id)
-        .single();
+        .maybeSingle();
       if (couple) setDistance(couple.distance_km);
     }
 

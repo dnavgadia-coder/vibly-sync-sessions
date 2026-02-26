@@ -25,17 +25,14 @@ export function useDailyQuestion() {
     if (!user) return;
 
     const load = async () => {
-      // Get profile for couple_id and streak
       const { data: prof } = await supabase
         .from("profiles")
         .select("couple_id, streak_count, last_answered_date")
         .eq("id", user.id)
-        .single();
+        .maybeSingle();
 
-      // Determine day number based on streak or creation
       const dayNum = (prof?.streak_count ?? 0) + 1;
 
-      // Find question for this day (cycle through available questions)
       const { data: questions } = await supabase
         .from("questions")
         .select("*")
@@ -51,9 +48,8 @@ export function useDailyQuestion() {
 
       setQuestion({ ...q, options: opts });
 
-      // Check if already answered today
+      // Check if already answered
       if (prof?.couple_id) {
-        const today = new Date().toISOString().split("T")[0];
         const { data: answers } = await supabase
           .from("answers")
           .select("user_id, answer_index")
@@ -66,7 +62,6 @@ export function useDailyQuestion() {
           if (mine) setMyAnswer(mine.answer_index);
           if (theirs) {
             setPartnerAnswered(true);
-            // Only reveal if I also answered
             if (mine) setPartnerAnswer(theirs.answer_index);
           }
         }
@@ -83,9 +78,9 @@ export function useDailyQuestion() {
 
     const { data: prof } = await supabase
       .from("profiles")
-      .select("couple_id")
+      .select("couple_id, streak_count")
       .eq("id", user.id)
-      .single();
+      .maybeSingle();
 
     const coupleId = prof?.couple_id || "solo_" + user.id;
 
@@ -97,11 +92,13 @@ export function useDailyQuestion() {
       answer_text: answerText,
     });
 
-    // Update streak
     const today = new Date().toISOString().split("T")[0];
     await supabase
       .from("profiles")
-      .update({ last_answered_date: today, streak_count: (prof as any)?.streak_count ? (prof as any).streak_count + 1 : 1 })
+      .update({
+        last_answered_date: today,
+        streak_count: (prof?.streak_count ?? 0) + 1,
+      })
       .eq("id", user.id);
 
     setMyAnswer(index);

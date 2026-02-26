@@ -23,7 +23,7 @@ const ConnectPartnerScreen: React.FC = () => {
         .from("profiles")
         .select("invite_code, partner_id")
         .eq("id", user.id)
-        .single();
+        .maybeSingle();
       if (data?.partner_id) {
         navigate("/home");
         return;
