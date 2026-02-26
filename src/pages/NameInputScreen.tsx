@@ -1,11 +1,21 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 import ViblyButton from "@/components/ViblyButton";
 
 const NameInputScreen: React.FC = () => {
   const navigate = useNavigate();
   const [name, setName] = useState("");
+
+  const handleContinue = async () => {
+    if (!name.trim()) return;
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      await supabase.from("profiles").update({ name: name.trim() }).eq("id", user.id);
+    }
+    navigate("/partner-name");
+  };
 
   return (
     <div className="min-h-[100dvh] flex flex-col px-5 pt-14 pb-8 mesh-bg noise-overlay vignette">
@@ -59,7 +69,7 @@ const NameInputScreen: React.FC = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.5 }}
       >
-        <ViblyButton onClick={() => name.trim() && navigate("/partner-name")}>
+        <ViblyButton onClick={handleContinue}>
           Continue →
         </ViblyButton>
       </motion.div>

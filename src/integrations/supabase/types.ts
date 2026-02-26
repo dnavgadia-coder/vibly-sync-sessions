@@ -14,13 +14,207 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      answers: {
+        Row: {
+          answer_index: number
+          answer_text: string
+          couple_id: string
+          created_at: string
+          id: string
+          question_id: string
+          user_id: string
+        }
+        Insert: {
+          answer_index: number
+          answer_text: string
+          couple_id: string
+          created_at?: string
+          id?: string
+          question_id: string
+          user_id: string
+        }
+        Update: {
+          answer_index?: number
+          answer_text?: string
+          couple_id?: string
+          created_at?: string
+          id?: string
+          question_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "answers_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "questions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "answers_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      couples: {
+        Row: {
+          created_at: string
+          distance_km: number | null
+          distance_updated_at: string | null
+          id: string
+          user_a: string
+          user_b: string
+        }
+        Insert: {
+          created_at?: string
+          distance_km?: number | null
+          distance_updated_at?: string | null
+          id: string
+          user_a: string
+          user_b: string
+        }
+        Update: {
+          created_at?: string
+          distance_km?: number | null
+          distance_updated_at?: string | null
+          id?: string
+          user_a?: string
+          user_b?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "couples_user_a_fkey"
+            columns: ["user_a"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "couples_user_b_fkey"
+            columns: ["user_b"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          couple_id: string | null
+          created_at: string
+          current_mood: string | null
+          fcm_token: string | null
+          id: string
+          invite_code: string | null
+          invite_code_expires_at: string | null
+          last_answered_date: string | null
+          location_lat: number | null
+          location_lng: number | null
+          location_updated_at: string | null
+          name: string
+          partner_id: string | null
+          partner_name: string | null
+          start_date: string | null
+          streak_count: number
+          subscription_status: string
+          updated_at: string
+        }
+        Insert: {
+          couple_id?: string | null
+          created_at?: string
+          current_mood?: string | null
+          fcm_token?: string | null
+          id: string
+          invite_code?: string | null
+          invite_code_expires_at?: string | null
+          last_answered_date?: string | null
+          location_lat?: number | null
+          location_lng?: number | null
+          location_updated_at?: string | null
+          name?: string
+          partner_id?: string | null
+          partner_name?: string | null
+          start_date?: string | null
+          streak_count?: number
+          subscription_status?: string
+          updated_at?: string
+        }
+        Update: {
+          couple_id?: string | null
+          created_at?: string
+          current_mood?: string | null
+          fcm_token?: string | null
+          id?: string
+          invite_code?: string | null
+          invite_code_expires_at?: string | null
+          last_answered_date?: string | null
+          location_lat?: number | null
+          location_lng?: number | null
+          location_updated_at?: string | null
+          name?: string
+          partner_id?: string | null
+          partner_name?: string | null
+          start_date?: string | null
+          streak_count?: number
+          subscription_status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profiles_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      questions: {
+        Row: {
+          category: string | null
+          created_at: string
+          day_number: number | null
+          emoji: string | null
+          id: string
+          options: Json
+          text: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          day_number?: number | null
+          emoji?: string | null
+          id?: string
+          options?: Json
+          text: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          day_number?: number | null
+          emoji?: string | null
+          id?: string
+          options?: Json
+          text?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      find_user_by_invite_code: {
+        Args: { _code: string }
+        Returns: {
+          id: string
+          name: string
+        }[]
+      }
+      link_partners: { Args: { _partner_id: string }; Returns: string }
     }
     Enums: {
       [_ in never]: never
