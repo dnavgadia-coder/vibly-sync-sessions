@@ -12,11 +12,28 @@ const AuthScreen: React.FC = () => {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleAuth = async () => {
-    if (!email.trim() || !password.trim()) {
-      toast.error("Please fill in all fields");
-      return;
+  const validateForm = () => {
+    if (!email.trim()) {
+      toast.error("Please enter your email");
+      return false;
     }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+      toast.error("Please enter a valid email address");
+      return false;
+    }
+    if (!password.trim()) {
+      toast.error("Please enter your password");
+      return false;
+    }
+    if (password.length < 6) {
+      toast.error("Password must be at least 6 characters");
+      return false;
+    }
+    return true;
+  };
+
+  const handleAuth = async () => {
+    if (!validateForm()) return;
     setLoading(true);
     try {
       if (isLogin) {
@@ -24,13 +41,10 @@ const AuthScreen: React.FC = () => {
         if (error) throw error;
         navigate("/home");
       } else {
-        const { error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: { emailRedirectTo: window.location.origin },
-        });
+        const { error } = await supabase.auth.signUp({ email, password });
         if (error) throw error;
-        toast.success("Check your email to verify your account!");
+        toast.success("Account created!");
+        navigate("/name");
       }
     } catch (err: any) {
       toast.error(err.message || "Something went wrong");
