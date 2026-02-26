@@ -1,19 +1,44 @@
 import React, { useState } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
+import { useProfile } from "@/hooks/useProfile";
+import { useDailyQuestion } from "@/hooks/useDailyQuestion";
 import OptionCard from "@/components/OptionCard";
+import MoodScreen from "@/pages/MoodScreen";
+import SettingsScreen from "@/pages/SettingsScreen";
+import { Settings } from "lucide-react";
+
+type TabId = "today" | "mood" | "weekly" | "settings";
 
 const HomeScreen: React.FC = () => {
   const navigate = useNavigate();
-  const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
-  const [activeTab, setActiveTab] = useState<"today" | "mood" | "weekly">("today");
+  const [activeTab, setActiveTab] = useState<TabId>("today");
+  const { profile, partner, distance, daysCount, loading: profileLoading } = useProfile();
+  const { question, myAnswer, partnerAnswered, partnerAnswer, submitting, submitAnswer } = useDailyQuestion();
 
-  const answerOptions = [
-    { emoji: "🏖️", text: "Beach vacation" },
-    { emoji: "🏔️", text: "Mountain cabin" },
-    { emoji: "🌆", text: "City trip" },
-    { emoji: "🚗", text: "Road trip" },
-  ];
+  const handleAnswer = (index: number) => {
+    if (myAnswer !== null || !question) return;
+    submitAnswer(index, question.options[index]);
+  };
+
+  // Render tab content inline
+  if (activeTab === "mood") {
+    return (
+      <div className="relative">
+        <MoodScreen />
+        <BottomTabBar activeTab={activeTab} setActiveTab={setActiveTab} navigate={navigate} />
+      </div>
+    );
+  }
+
+  if (activeTab === "settings") {
+    return (
+      <div className="relative">
+        <SettingsScreen />
+        <BottomTabBar activeTab={activeTab} setActiveTab={setActiveTab} navigate={navigate} />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-[100dvh] flex flex-col mesh-bg noise-overlay vignette pb-24">
@@ -22,110 +47,186 @@ const HomeScreen: React.FC = () => {
         <h1 className="font-heading font-extrabold text-2xl text-foreground">Vibly</h1>
         <div className="flex items-center gap-2">
           <span className="glass-card px-3 py-1.5 text-xs font-body font-semibold text-foreground">
-            🔥 14
+            🔥 {profile?.streak_count ?? 0}
           </span>
           <span className="glass-card px-3 py-1.5 text-xs font-body font-semibold text-foreground">
-            💕 247d
+            💕 {daysCount}d
           </span>
         </div>
       </div>
 
       <div className="px-5 flex flex-col gap-4 relative z-10">
         {/* Distance banner */}
-        <motion.div
-          className="glass-card-elevated p-5 light-sweep animate-breathe"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-        >
-          <div className="flex items-center justify-between">
+        {profile?.partner_id && (
+          <motion.div
+            className="glass-card-elevated p-5 light-sweep animate-breathe"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-11 h-11 rounded-full bg-primary/12 flex items-center justify-center glow-rose">
+                  <span className="text-lg">📍</span>
+                </div>
+                <div>
+                  <p className="text-xs font-body text-muted-foreground mb-0.5">Distance apart</p>
+                  <p className="text-lg font-heading font-bold text-amber text-glow-amber">
+                    {distance !== null ? `${Math.round(distance)} km` : "—"}
+                  </p>
+                </div>
+              </div>
+              <div className="text-right">
+                <p className="text-xs font-body text-muted-foreground mb-0.5">
+                  {partner?.name ? `${partner.name}'s mood` : "Partner's mood"}
+                </p>
+                <motion.p
+                  className="text-2xl"
+                  animate={{ rotate: [0, 5, -5, 0] }}
+                  transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                >
+                  {partner?.current_mood || "🔒"}
+                </motion.p>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
+        {/* Not connected banner */}
+        {!profile?.partner_id && !profileLoading && (
+          <motion.button
+            onClick={() => navigate("/connect")}
+            className="glass-card-elevated p-5 text-left"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            whileTap={{ scale: 0.98 }}
+          >
             <div className="flex items-center gap-3">
-              <div className="w-11 h-11 rounded-full bg-primary/12 flex items-center justify-center glow-rose">
-                <span className="text-lg">📍</span>
+              <div className="w-11 h-11 rounded-full bg-amber/12 flex items-center justify-center glow-amber">
+                <span className="text-lg">💌</span>
               </div>
-              <div>
-                <p className="text-xs font-body text-muted-foreground mb-0.5">Distance apart</p>
-                <p className="text-lg font-heading font-bold text-amber text-glow-amber">847 km</p>
+              <div className="flex-1">
+                <p className="font-heading font-bold text-foreground">Connect with your partner</p>
+                <p className="text-xs font-body text-muted-foreground">Share your invite code to get started</p>
               </div>
+              <span className="text-muted-foreground">→</span>
             </div>
-            <div className="text-right">
-              <p className="text-xs font-body text-muted-foreground mb-0.5">Sarah's mood</p>
-              <motion.p
-                className="text-2xl"
-                animate={{ rotate: [0, 5, -5, 0] }}
-                transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-              >
-                😊
-              </motion.p>
-            </div>
-          </div>
-        </motion.div>
+          </motion.button>
+        )}
 
         {/* Daily Question */}
-        <motion.div
-          className="glass-card-elevated p-6 relative overflow-hidden"
-          style={{
-            background: "linear-gradient(135deg, hsla(240,29%,10%,0.6) 0%, hsla(263,86%,76%,0.06) 100%)",
-          }}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-        >
-          {/* Subtle edge glow */}
-          <div className="absolute -top-px left-1/4 right-1/4 h-px bg-gradient-to-r from-transparent via-lavender/20 to-transparent" />
+        {question && (
+          <motion.div
+            className="glass-card-elevated p-6 relative overflow-hidden"
+            style={{
+              background: "linear-gradient(135deg, hsla(240,29%,10%,0.6) 0%, hsla(263,86%,76%,0.06) 100%)",
+            }}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+          >
+            <div className="absolute -top-px left-1/4 right-1/4 h-px bg-gradient-to-r from-transparent via-lavender/20 to-transparent" />
 
-          <p className="text-[10px] font-body font-semibold text-muted-foreground tracking-widest uppercase mb-3">
-            TODAY'S QUESTION
-          </p>
-          <p className="text-[22px] font-heading font-bold text-foreground mb-5 leading-tight">
-            What's your dream vacation together?
-          </p>
+            <p className="text-[10px] font-body font-semibold text-muted-foreground tracking-widest uppercase mb-3">
+              TODAY'S QUESTION
+            </p>
+            <p className="text-[22px] font-heading font-bold text-foreground mb-5 leading-tight">
+              {question.emoji} {question.text}
+            </p>
 
-          <div className="flex flex-col gap-2.5">
-            {answerOptions.map((option, index) => (
-              <OptionCard
-                key={index}
-                emoji={option.emoji}
-                text={option.text}
-                selected={selectedAnswer === index}
-                onClick={() => setSelectedAnswer(index)}
-              />
-            ))}
-          </div>
+            <div className="flex flex-col gap-2.5">
+              {question.options.map((option, index) => (
+                <OptionCard
+                  key={index}
+                  emoji={myAnswer !== null && partnerAnswer !== null && partnerAnswer === index ? "💕" : ""}
+                  text={option}
+                  selected={myAnswer === index}
+                  onClick={() => handleAnswer(index)}
+                />
+              ))}
+            </div>
 
-          <p className="text-[13px] font-body text-muted-foreground text-center mt-5">
-            🔒 Sarah's answer is locked
-          </p>
-        </motion.div>
+            {myAnswer !== null && (
+              <motion.p
+                className="text-[13px] font-body text-muted-foreground text-center mt-5"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+              >
+                {partnerAnswer !== null
+                  ? partnerAnswer === myAnswer
+                    ? "🎉 You both matched!"
+                    : `💬 ${partner?.name || "Partner"} picked: ${question.options[partnerAnswer]}`
+                  : `🔒 ${partner?.name || "Partner"}'s answer is locked`}
+              </motion.p>
+            )}
+
+            {myAnswer === null && (
+              <p className="text-[13px] font-body text-muted-foreground text-center mt-5">
+                {partnerAnswered ? `✅ ${partner?.name || "Partner"} already answered` : `🔒 ${partner?.name || "Partner"}'s answer is locked`}
+              </p>
+            )}
+          </motion.div>
+        )}
+
+        {!question && !profileLoading && (
+          <motion.div
+            className="glass-card-elevated p-6 text-center"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
+            <span className="text-4xl block mb-3">💬</span>
+            <p className="font-heading font-bold text-foreground mb-1">No questions yet</p>
+            <p className="text-sm font-body text-muted-foreground">Questions will appear here daily</p>
+          </motion.div>
+        )}
       </div>
 
-      {/* Floating Tab Bar */}
-      <div className="fixed bottom-6 left-1/2 -translate-x-1/2 w-[calc(100%-40px)] max-w-[390px] z-50">
-        <div className="glass-card-elevated p-1.5 flex items-center justify-around !rounded-pill">
-          {[
-            { id: "today" as const, emoji: "💬", label: "Today" },
-            { id: "mood" as const, emoji: "😊", label: "Mood" },
-            { id: "weekly" as const, emoji: "📊", label: "Weekly" },
-          ].map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => {
-                setActiveTab(tab.id);
-                if (tab.id === "weekly") navigate("/weekly");
-              }}
-              className={`flex items-center gap-1.5 px-5 py-2.5 rounded-pill text-sm font-body font-medium transition-all duration-200 ${
-                activeTab === tab.id
-                  ? "bg-primary/12 text-primary glow-rose"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              <span>{tab.emoji}</span>
-              <span>{tab.label}</span>
-            </button>
-          ))}
-        </div>
-      </div>
+      <BottomTabBar activeTab={activeTab} setActiveTab={setActiveTab} navigate={navigate} />
     </div>
   );
 };
+
+function BottomTabBar({
+  activeTab,
+  setActiveTab,
+  navigate,
+}: {
+  activeTab: TabId;
+  setActiveTab: (tab: TabId) => void;
+  navigate: (path: string) => void;
+}) {
+  const tabs = [
+    { id: "today" as TabId, emoji: "💬", label: "Today" },
+    { id: "mood" as TabId, emoji: "😊", label: "Mood" },
+    { id: "weekly" as TabId, emoji: "📊", label: "Weekly" },
+    { id: "settings" as TabId, emoji: "⚙️", label: "Settings" },
+  ];
+
+  return (
+    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 w-[calc(100%-40px)] max-w-[390px] z-50">
+      <div className="glass-card-elevated p-1.5 flex items-center justify-around !rounded-pill">
+        {tabs.map((tab) => (
+          <button
+            key={tab.id}
+            onClick={() => {
+              if (tab.id === "weekly") {
+                navigate("/weekly");
+              } else {
+                setActiveTab(tab.id);
+              }
+            }}
+            className={`flex items-center gap-1.5 px-4 py-2.5 rounded-pill text-sm font-body font-medium transition-all duration-200 ${
+              activeTab === tab.id
+                ? "bg-primary/12 text-primary glow-rose"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <span className="text-base">{tab.emoji}</span>
+            <span className="hidden sm:inline">{tab.label}</span>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 export default HomeScreen;

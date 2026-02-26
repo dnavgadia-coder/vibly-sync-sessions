@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -17,8 +17,12 @@ const MOODS = [
 const MoodScreen: React.FC = () => {
   const { user } = useAuth();
   const { profile, partner, refetch } = useProfile();
-  const [selectedMood, setSelectedMood] = useState<string | null>(profile?.current_mood || null);
+  const [selectedMood, setSelectedMood] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    if (profile?.current_mood) setSelectedMood(profile.current_mood);
+  }, [profile?.current_mood]);
 
   const handleMoodSelect = async (emoji: string) => {
     if (!user) return;

@@ -19,6 +19,8 @@ import HomeScreen from "./pages/HomeScreen";
 import WeeklyReportScreen from "./pages/WeeklyReportScreen";
 import AuthScreen from "./pages/AuthScreen";
 import ConnectPartnerScreen from "./pages/ConnectPartnerScreen";
+import MoodScreen from "./pages/MoodScreen";
+import SettingsScreen from "./pages/SettingsScreen";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -52,6 +54,8 @@ const App = () => (
             <Route path="/paywall" element={<ProtectedRoute><PaywallScreen /></ProtectedRoute>} />
             <Route path="/connect" element={<ProtectedRoute><ConnectPartnerScreen /></ProtectedRoute>} />
             <Route path="/home" element={<ProtectedRoute><HomeScreen /></ProtectedRoute>} />
+            <Route path="/mood" element={<ProtectedRoute><MoodScreen /></ProtectedRoute>} />
+            <Route path="/settings" element={<ProtectedRoute><SettingsScreen /></ProtectedRoute>} />
             <Route path="/weekly" element={<ProtectedRoute><WeeklyReportScreen /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
