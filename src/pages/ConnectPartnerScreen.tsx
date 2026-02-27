@@ -1,9 +1,9 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Copy } from "lucide-react";
+import { Copy, Check } from "lucide-react";
 
 const ConnectPartnerScreen: React.FC = () => {
   const navigate = useNavigate();
@@ -26,28 +26,22 @@ const ConnectPartnerScreen: React.FC = () => {
         .select("invite_code, invite_code_expires_at, partner_id")
         .eq("id", user.id)
         .maybeSingle();
-      if (data?.partner_id) {
-        navigate("/home");
-        return;
-      }
+      if (data?.partner_id) { navigate("/home"); return; }
       if (data?.invite_code) setMyCode(data.invite_code);
       if (data?.invite_code_expires_at) setExpiresAt(new Date(data.invite_code_expires_at));
     };
     fetchMyCode();
   }, [navigate]);
 
-  // Countdown timer
   useEffect(() => {
     if (!expiresAt) return;
     const tick = () => {
-      const now = new Date();
-      const diff = Math.max(0, expiresAt.getTime() - now.getTime());
+      const diff = Math.max(0, expiresAt.getTime() - Date.now());
       if (diff === 0) { setCountdown("Expired"); return; }
-      const hours = Math.floor(diff / 3600000);
-      const mins = Math.floor((diff % 3600000) / 60000);
-      const secs = Math.floor((diff % 60000) / 1000);
-      if (hours > 0) setCountdown(`${hours}h ${mins}m remaining`);
-      else setCountdown(`${mins}:${secs.toString().padStart(2, "0")} remaining`);
+      const h = Math.floor(diff / 3600000);
+      const m = Math.floor((diff % 3600000) / 60000);
+      const s = Math.floor((diff % 60000) / 1000);
+      setCountdown(h > 0 ? `${h}h ${m}m remaining` : `${m}:${s.toString().padStart(2, "0")} remaining`);
     };
     tick();
     const interval = setInterval(tick, 1000);
@@ -61,20 +55,12 @@ const ConnectPartnerScreen: React.FC = () => {
   };
 
   const searchPartner = async () => {
-    if (partnerCode.trim().length < 4) {
-      toast.error("Enter a valid code");
-      return;
-    }
+    if (partnerCode.trim().length < 4) { toast.error("Enter a valid code"); return; }
     setLoading(true);
     try {
-      const { data, error } = await supabase.rpc("find_user_by_invite_code", {
-        _code: partnerCode.trim(),
-      });
+      const { data, error } = await supabase.rpc("find_user_by_invite_code", { _code: partnerCode.trim() });
       if (error) throw error;
-      if (!data || data.length === 0) {
-        toast.error("No match found. Check the code.");
-        return;
-      }
+      if (!data || data.length === 0) { toast.error("No match found. Check the code."); return; }
       setFoundPartner(data[0]);
       setShowConfirm(true);
     } catch (err: any) {
@@ -88,9 +74,7 @@ const ConnectPartnerScreen: React.FC = () => {
     if (!foundPartner) return;
     setLoading(true);
     try {
-      const { error } = await supabase.rpc("link_partners", {
-        _partner_id: foundPartner.id,
-      });
+      const { error } = await supabase.rpc("link_partners", { _partner_id: foundPartner.id });
       if (error) throw error;
       setLinked(true);
       setTimeout(() => navigate("/notification"), 2500);
@@ -153,11 +137,7 @@ const ConnectPartnerScreen: React.FC = () => {
           <div className="flex flex-col gap-3">
             <button
               onClick={confirmLink}
-              className="w-full py-4 rounded-[20px] text-white font-heading font-bold text-base"
-              style={{
-                background: "linear-gradient(135deg, #FF3B7A, #FF6B9D)",
-                boxShadow: "0 4px 24px rgba(255, 59, 122, 0.3)",
-              }}
+              className="w-full py-4 rounded-[20px] text-white font-heading font-bold text-base bg-gradient-rose glow-rose-strong"
             >
               {loading ? "Connecting..." : "Confirm ✨"}
             </button>
@@ -174,78 +154,61 @@ const ConnectPartnerScreen: React.FC = () => {
   }
 
   return (
-    <div
-      className="min-h-[100dvh] flex flex-col px-5 pt-14 pb-8 relative"
-      style={{ background: "linear-gradient(180deg, #FFE8D6 0%, #FFF5EE 50%, #FAFAFA 100%)" }}
-    >
+    <div className="min-h-[100dvh] flex flex-col px-5 pt-14 pb-8 relative mesh-bg noise-overlay vignette">
       {/* Not now */}
       <button
         onClick={() => navigate("/notification")}
-        className="absolute top-4 right-5 z-10 text-[13px] font-body font-medium"
-        style={{ color: "#666" }}
+        className="absolute top-4 right-5 z-10 text-[13px] font-body font-medium text-muted-foreground"
       >
         Not now
       </button>
 
       <div className="flex-1 flex flex-col relative z-10">
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mb-6"
-        >
-          <h2
-            className="font-heading font-extrabold text-[28px] mb-2"
-            style={{ color: "#1A1A2E" }}
-          >
+        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
+          <h2 className="font-heading font-extrabold text-[28px] text-foreground mb-2">
             Connect with Your Partner
           </h2>
-          <p className="text-sm font-body" style={{ color: "#555" }}>
+          <p className="text-sm font-body text-muted-foreground">
             All your details, including answers and journal entries will be shared with your partner.
           </p>
         </motion.div>
 
         {/* Send Code Card */}
         <motion.div
-          className="rounded-[20px] p-5 mb-6"
-          style={{ background: "#FFFFFF", boxShadow: "0 2px 16px rgba(0,0,0,0.06)" }}
+          className="glass-card p-5 mb-5"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
         >
-          <p className="text-[15px] font-body font-semibold text-center" style={{ color: "#1A1A2E" }}>
+          <p className="text-[15px] font-body font-semibold text-center text-foreground">
             Send this code to your partner
           </p>
-          <p
-            className="font-heading font-extrabold text-[36px] text-center mt-3 tracking-[3px]"
-            style={{ color: "#FF3B7A" }}
-          >
+          <p className="font-heading font-extrabold text-[36px] text-center mt-3 tracking-[3px] text-primary">
             {myCode || "------"}
           </p>
-          <p className="text-xs font-body text-center mt-2" style={{ color: "#999" }}>
+          <p className="text-xs font-body text-center mt-2 text-muted-foreground">
             ⏱ {countdown || "Loading..."}
           </p>
           <button
             onClick={copyCode}
-            className="w-full mt-4 py-3 rounded-[14px] text-[15px] font-body font-semibold transition-all"
-            style={{
-              background: "transparent",
-              border: "1.5px solid #FF3B7A",
-              color: "#FF3B7A",
-            }}
+            className="w-full mt-4 py-3 rounded-[14px] text-[15px] font-body font-semibold transition-all flex items-center justify-center gap-2 border border-primary/40 text-primary hover:bg-primary/10"
           >
-            {copied ? "Code copied! ✓" : "Send code"}
+            {copied ? (
+              <><Check className="w-4 h-4" /> Code copied!</>
+            ) : (
+              <><Copy className="w-4 h-4" /> Send code</>
+            )}
           </button>
         </motion.div>
 
         {/* Enter Code Card */}
         <motion.div
-          className="rounded-[20px] p-5"
-          style={{ background: "#FFFFFF", boxShadow: "0 2px 16px rgba(0,0,0,0.06)" }}
+          className="glass-card p-5"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
         >
-          <p className="text-[15px] font-body font-semibold text-center" style={{ color: "#1A1A2E" }}>
+          <p className="text-[15px] font-body font-semibold text-center text-foreground">
             Enter your partner's code
           </p>
           <input
@@ -253,26 +216,15 @@ const ConnectPartnerScreen: React.FC = () => {
             value={partnerCode}
             onChange={(e) => setPartnerCode(e.target.value.toUpperCase())}
             placeholder="Enter the code"
-            maxLength={6}
-            className="w-full mt-3 rounded-[14px] px-4 py-3.5 text-center font-body text-base focus:outline-none"
-            style={{
-              background: "#F5F5F5",
-              color: "#1A1A2E",
-            }}
+            maxLength={8}
+            inputMode="numeric"
+            className="w-full mt-3 rounded-[14px] px-4 py-3.5 text-center font-body text-base focus:outline-none bg-input text-foreground placeholder:text-muted-foreground border border-border focus:border-primary/30 transition-colors"
           />
           <button
             onClick={searchPartner}
             disabled={partnerCode.trim().length < 4}
-            className="w-full mt-4 py-3.5 rounded-[20px] text-white font-heading font-bold text-base transition-all"
-            style={{
-              background: partnerCode.trim().length >= 4
-                ? "linear-gradient(135deg, #FF3B7A, #FF6B9D)"
-                : "rgba(255,59,122,0.4)",
-              boxShadow: partnerCode.trim().length >= 4
-                ? "0 4px 20px rgba(255, 59, 122, 0.35)"
-                : "none",
-              opacity: partnerCode.trim().length >= 4 ? 1 : 0.4,
-            }}
+            className="w-full mt-4 py-3.5 rounded-[20px] text-white font-heading font-bold text-base transition-all bg-gradient-rose disabled:opacity-40 disabled:shadow-none glow-rose-strong"
+            style={{ boxShadow: partnerCode.trim().length >= 4 ? undefined : "none" }}
           >
             {loading ? "Searching..." : "Connect"}
           </button>
