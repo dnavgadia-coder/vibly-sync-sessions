@@ -99,6 +99,7 @@ const QuizScreen: React.FC = () => {
   const stepNumber = currentQ + 2; // quiz starts at step 2
   const progress = Math.round((stepNumber / TOTAL_ONBOARDING_STEPS) * 100);
   const q = quizQuestions[currentQ];
+  if (!q) return null;
 
   const handleSelect = (index: number) => {
     setSelected(index);
