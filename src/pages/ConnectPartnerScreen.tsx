@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Copy, Check } from "lucide-react";
 
 const ConnectPartnerScreen: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const isFromOnboarding = location.state?.from === "onboarding";
   const [myCode, setMyCode] = useState("");
   const [expiresAt, setExpiresAt] = useState<Date | null>(null);
   const [countdown, setCountdown] = useState("");
@@ -157,7 +159,7 @@ const ConnectPartnerScreen: React.FC = () => {
     <div className="min-h-[100dvh] flex flex-col px-5 pt-14 pb-8 relative mesh-bg noise-overlay vignette">
       {/* Not now */}
       <button
-        onClick={() => navigate(-1)}
+        onClick={() => isFromOnboarding ? navigate("/notification", { state: { from: "onboarding" } }) : navigate(-1)}
         className="absolute top-4 right-5 z-10 text-[13px] font-body font-medium text-muted-foreground"
       >
         Not now
