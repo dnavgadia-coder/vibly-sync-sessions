@@ -52,12 +52,12 @@ const AnniversaryScreen: React.FC = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
         >
-          <input
+           <input
             type="date"
             value={date}
             onChange={(e) => setDate(e.target.value)}
             max={new Date().toISOString().split("T")[0]}
-            className="w-full max-w-full glass-card px-5 py-4 rounded-option text-foreground font-body text-base placeholder:text-muted-foreground focus:outline-none focus:border-primary/30 transition-all box-border"
+            className="w-full glass-card px-5 py-4 rounded-option text-foreground font-body text-base placeholder:text-muted-foreground focus:outline-none focus:border-primary/30 transition-all"
             style={{ colorScheme: "dark" }}
           />
         </motion.div>
