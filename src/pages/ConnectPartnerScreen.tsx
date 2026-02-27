@@ -160,7 +160,7 @@ const ConnectPartnerScreen: React.FC = () => {
       {/* Not now */}
       <button
         onClick={() => isFromOnboarding ? navigate("/notification", { state: { from: "onboarding" } }) : navigate(-1)}
-        className="absolute top-4 right-5 z-10 text-[13px] font-body font-medium text-muted-foreground"
+        className="absolute top-12 right-5 z-10 text-[13px] font-body font-medium text-muted-foreground"
       >
         Not now
       </button>
