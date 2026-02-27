@@ -81,5 +81,57 @@ export function useProfile() {
     fetchData();
   }, [user]);
 
+  // Realtime subscription for distance updates
+  useEffect(() => {
+    if (!profile?.couple_id) return;
+
+    const channel = supabase
+      .channel(`couple-distance-${profile.couple_id}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "couples",
+          filter: `id=eq.${profile.couple_id}`,
+        },
+        (payload) => {
+          const newDistance = (payload.new as any).distance_km;
+          if (newDistance !== undefined) setDistance(newDistance);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [profile?.couple_id]);
+
+  // Realtime subscription for partner mood updates
+  useEffect(() => {
+    if (!profile?.partner_id) return;
+
+    const channel = supabase
+      .channel(`partner-mood-${profile.partner_id}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "profiles",
+          filter: `id=eq.${profile.partner_id}`,
+        },
+        (payload) => {
+          const p = payload.new as any;
+          setPartner((prev) => prev ? { ...prev, current_mood: p.current_mood ?? prev.current_mood } : prev);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [profile?.partner_id]);
+
   return { profile, partner, distance, daysCount, loading, refetch: fetchData };
 }
