@@ -27,7 +27,7 @@ const PaywallScreen: React.FC = () => {
 
   const goForward = () => {
     if (isFromOnboarding) {
-      navigate("/connect");
+      navigate("/connect", { state: { from: "onboarding" } });
     } else {
       navigate(-1);
     }
