@@ -181,6 +181,7 @@ export type Database = {
           id: string
           options: Json
           text: string
+          tier: number
         }
         Insert: {
           category?: string | null
@@ -190,6 +191,7 @@ export type Database = {
           id?: string
           options?: Json
           text: string
+          tier?: number
         }
         Update: {
           category?: string | null
@@ -199,6 +201,7 @@ export type Database = {
           id?: string
           options?: Json
           text?: string
+          tier?: number
         }
         Relationships: []
       }
@@ -215,6 +218,7 @@ export type Database = {
         }[]
       }
       link_partners: { Args: { _partner_id: string }; Returns: string }
+      unlink_partner: { Args: never; Returns: undefined }
     }
     Enums: {
       [_ in never]: never

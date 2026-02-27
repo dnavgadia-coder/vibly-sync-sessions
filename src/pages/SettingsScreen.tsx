@@ -4,12 +4,12 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useProfile } from "@/hooks/useProfile";
 import { toast } from "sonner";
-import { LogOut, User, Link, Copy, ChevronRight } from "lucide-react";
+import { LogOut, User, Link, Unlink, Copy, ChevronRight } from "lucide-react";
 import ViblyButton from "@/components/ViblyButton";
 
 const SettingsScreen: React.FC = () => {
   const navigate = useNavigate();
-  const { profile, partner, daysCount } = useProfile();
+  const { profile, partner, daysCount, refetch } = useProfile();
   const [loggingOut, setLoggingOut] = useState(false);
 
   const handleLogout = async () => {
@@ -73,15 +73,33 @@ const SettingsScreen: React.FC = () => {
             PARTNER STATUS
           </p>
           {partner ? (
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-accent/12 flex items-center justify-center glow-mint">
-                <Link className="w-5 h-5 text-accent" />
+            <div>
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-accent/12 flex items-center justify-center glow-mint">
+                  <Link className="w-5 h-5 text-accent" />
+                </div>
+                <div className="flex-1">
+                  <p className="font-heading font-bold text-foreground">Connected with {partner.name}</p>
+                  <p className="text-xs font-body text-muted-foreground">🔥 {profile?.streak_count || 0} day streak</p>
+                </div>
+                <span className="text-accent text-xs font-body font-semibold">Active</span>
               </div>
-              <div className="flex-1">
-                <p className="font-heading font-bold text-foreground">Connected with {partner.name}</p>
-                <p className="text-xs font-body text-muted-foreground">🔥 {profile?.streak_count || 0} day streak</p>
-              </div>
-              <span className="text-accent text-xs font-body font-semibold">Active</span>
+              <button
+                onClick={async () => {
+                  if (!confirm("Are you sure you want to unlink your partner? This cannot be undone.")) return;
+                  const { error } = await supabase.rpc("unlink_partner");
+                  if (error) {
+                    toast.error("Failed to unlink");
+                  } else {
+                    toast.success("Partner unlinked");
+                    refetch();
+                  }
+                }}
+                className="w-full mt-4 flex items-center justify-center gap-2 py-3 rounded-option glass-card text-sm font-body font-medium text-destructive"
+              >
+                <Unlink className="w-4 h-4" />
+                Unlink Partner
+              </button>
             </div>
           ) : (
             <div>

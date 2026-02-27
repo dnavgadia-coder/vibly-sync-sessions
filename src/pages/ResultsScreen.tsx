@@ -4,6 +4,8 @@ import { useNavigate } from "react-router-dom";
 import ViblyButton from "@/components/ViblyButton";
 import { Lock } from "lucide-react";
 
+import { useProfile } from "@/hooks/useProfile";
+
 const vibeStats = [
   { label: "Communication", value: 78, color: "bg-primary", locked: false },
   { label: "Trust", value: 85, color: "bg-lavender", locked: true },
@@ -13,6 +15,8 @@ const vibeStats = [
 
 const ResultsScreen: React.FC = () => {
   const navigate = useNavigate();
+  const { profile } = useProfile();
+  const partnerName = profile?.partner_name || "Partner";
 
   return (
     <div className="min-h-[100dvh] flex flex-col px-5 pt-14 pb-8 mesh-bg noise-overlay vignette">
@@ -43,16 +47,16 @@ const ResultsScreen: React.FC = () => {
                 <div className="flex justify-between items-center mb-2.5">
                   <span className="text-sm font-body text-foreground font-medium">{stat.label}</span>
                   <span className="text-sm font-heading font-bold text-foreground">
-                    {stat.locked ? "" : `${stat.value}%`}
-                    {stat.locked && <Lock className="w-3 h-3 inline text-muted-foreground" />}
+                    <span style={stat.locked ? { filter: "blur(4px)" } : {}}>
+                      {stat.value}%
+                    </span>
                   </span>
                 </div>
                 <div className="w-full h-2.5 bg-white/[0.04] rounded-pill overflow-hidden relative">
-                  {stat.locked && (
-                    <div className="absolute inset-0 frosted-strong bg-white/[0.03] z-10" />
-                  )}
+                  {/* Blur effect on locked bars */}
                   <motion.div
                     className={`h-full rounded-pill ${stat.color}`}
+                    style={stat.locked ? { filter: "blur(4px)" } : {}}
                     initial={{ width: 0 }}
                     animate={{ width: `${stat.value}%` }}
                     transition={{ delay: 0.4 + index * 0.15, duration: 0.8, ease: "easeOut" }}
@@ -69,7 +73,7 @@ const ResultsScreen: React.FC = () => {
           animate={{ opacity: 1 }}
           transition={{ delay: 0.8 }}
         >
-          🔒 Invite Sarah to unlock full results
+          🔒 Invite {partnerName} to unlock full results
         </motion.p>
       </div>
 

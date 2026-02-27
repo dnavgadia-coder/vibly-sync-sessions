@@ -6,14 +6,16 @@ interface ViblyButtonProps {
   variant?: "rose" | "mint";
   onClick?: () => void;
   className?: string;
+  disabled?: boolean;
 }
 
-const ViblyButton: React.FC<ViblyButtonProps> = ({ children, variant = "rose", onClick, className = "" }) => {
+const ViblyButton: React.FC<ViblyButtonProps> = ({ children, variant = "rose", onClick, className = "", disabled = false }) => {
   return (
     <motion.button
-      whileTap={{ scale: 0.97 }}
-      whileHover={{ scale: 1.02 }}
-      onClick={onClick}
+      whileTap={disabled ? {} : { scale: 0.97 }}
+      whileHover={disabled ? {} : { scale: 1.02 }}
+      onClick={disabled ? undefined : onClick}
+      disabled={disabled}
       className={`
         w-full py-4 rounded-pill font-heading font-bold text-base tracking-wide relative overflow-hidden
         ${variant === "rose"

@@ -1,16 +1,15 @@
 import React, { useState, useEffect } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
-import { toast } from "sonner";
 
 const MOODS = [
-  { emoji: "😊", label: "Happy" },
-  { emoji: "🥰", label: "Loved" },
-  { emoji: "😌", label: "Calm" },
+  { emoji: "😍", label: "Amazing" },
+  { emoji: "😊", label: "Good" },
+  { emoji: "😐", label: "Meh" },
   { emoji: "😢", label: "Sad" },
-  { emoji: "😤", label: "Frustrated" },
+  { emoji: "🔥", label: "Passionate" },
   { emoji: "😴", label: "Tired" },
 ];
 
@@ -18,29 +17,33 @@ const MoodScreen: React.FC = () => {
   const { user } = useAuth();
   const { profile, partner, refetch } = useProfile();
   const [selectedMood, setSelectedMood] = useState<string | null>(null);
+  const [justSelected, setJustSelected] = useState(false);
+  const [showSent, setShowSent] = useState(false);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     if (profile?.current_mood) setSelectedMood(profile.current_mood);
   }, [profile?.current_mood]);
 
-  const handleMoodSelect = async (emoji: string) => {
-    if (!user) return;
-    setSaving(true);
+  const handleMoodSelect = (emoji: string) => {
     setSelectedMood(emoji);
+    setJustSelected(true);
+  };
 
-    const { error } = await supabase
+  const handleShareMood = async () => {
+    if (!user || !selectedMood) return;
+    setSaving(true);
+
+    await supabase
       .from("profiles")
-      .update({ current_mood: emoji })
+      .update({ current_mood: selectedMood })
       .eq("id", user.id);
 
-    if (error) {
-      toast.error("Failed to save mood");
-    } else {
-      toast.success("Mood updated!");
-      refetch();
-    }
     setSaving(false);
+    setJustSelected(false);
+    setShowSent(true);
+    refetch();
+    setTimeout(() => setShowSent(false), 1200);
   };
 
   return (
@@ -56,9 +59,13 @@ const MoodScreen: React.FC = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
         >
-          <p className="text-[10px] font-body font-semibold text-muted-foreground tracking-widest uppercase mb-4">
+          <p className="text-[10px] font-body font-semibold text-muted-foreground tracking-widest uppercase mb-1">
             HOW ARE YOU FEELING?
           </p>
+          <p className="text-[13px] font-body text-muted-foreground mb-4">
+            {partner ? `${partner.name} will see your mood` : "Your partner will see your mood"}
+          </p>
+
           <div className="grid grid-cols-3 gap-3">
             {MOODS.map((mood, i) => (
               <motion.button
@@ -70,22 +77,35 @@ const MoodScreen: React.FC = () => {
                 transition={{ delay: i * 0.05 }}
                 className={`flex flex-col items-center gap-2 py-4 rounded-card transition-all duration-200 ${
                   selectedMood === mood.emoji
-                    ? "glass-card border-accent bg-accent/[0.08] glow-mint"
+                    ? "glass-card border-primary bg-primary/[0.1] glow-rose"
                     : "glass-card hover:border-white/10"
                 }`}
+                style={{ width: "100%", height: 70 }}
               >
-                <span className="text-3xl">{mood.emoji}</span>
-                <span className="text-xs font-body font-medium text-muted-foreground">{mood.label}</span>
-                {selectedMood === mood.emoji && (
-                  <motion.div
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    className="w-2 h-2 rounded-full bg-accent"
-                  />
-                )}
+                <span className="text-[28px]">{mood.emoji}</span>
+                <span className="text-[10px] font-body font-medium text-muted-foreground">{mood.label}</span>
               </motion.button>
             ))}
           </div>
+
+          {/* Share Mood button */}
+          <AnimatePresence>
+            {justSelected && selectedMood && (
+              <motion.button
+                onClick={handleShareMood}
+                className="w-full mt-5 py-3.5 rounded-[20px] font-heading font-bold text-sm"
+                style={{
+                  background: "linear-gradient(135deg, hsl(160, 84%, 64%), hsl(160, 70%, 55%))",
+                  color: "#07070E",
+                }}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 8 }}
+              >
+                {saving ? "Saving..." : "Share Mood ✓"}
+              </motion.button>
+            )}
+          </AnimatePresence>
         </motion.div>
 
         {/* Partner mood */}
@@ -124,6 +144,28 @@ const MoodScreen: React.FC = () => {
           )}
         </motion.div>
       </div>
+
+      {/* Sent overlay */}
+      <AnimatePresence>
+        {showSent && (
+          <motion.div
+            className="fixed inset-0 z-[100] flex items-center justify-center"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <motion.div
+              className="glass-card-elevated px-10 py-6 text-center"
+              initial={{ scale: 0.8 }}
+              animate={{ scale: 1 }}
+              exit={{ scale: 0.8 }}
+            >
+              <span className="text-4xl block mb-2">💚</span>
+              <p className="font-heading font-bold text-lg text-foreground">Sent!</p>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

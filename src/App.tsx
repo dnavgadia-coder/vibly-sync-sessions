@@ -12,6 +12,7 @@ import FeatureDistanceScreen from "./pages/FeatureDistanceScreen";
 import FeatureLockScreen from "./pages/FeatureLockScreen";
 import NameInputScreen from "./pages/NameInputScreen";
 import PartnerNameScreen from "./pages/PartnerNameScreen";
+import AnniversaryScreen from "./pages/AnniversaryScreen";
 import LoadingScreen from "./pages/LoadingScreen";
 import ResultsScreen from "./pages/ResultsScreen";
 import PaywallScreen from "./pages/PaywallScreen";
@@ -19,6 +20,7 @@ import HomeScreen from "./pages/HomeScreen";
 import WeeklyReportScreen from "./pages/WeeklyReportScreen";
 import AuthScreen from "./pages/AuthScreen";
 import ConnectPartnerScreen from "./pages/ConnectPartnerScreen";
+import NotificationScreen from "./pages/NotificationScreen";
 import MoodScreen from "./pages/MoodScreen";
 import SettingsScreen from "./pages/SettingsScreen";
 import NotFound from "./pages/NotFound";
@@ -49,10 +51,12 @@ const App = () => (
             <Route path="/feature-lock" element={<FeatureLockScreen />} />
             <Route path="/name" element={<ProtectedRoute><NameInputScreen /></ProtectedRoute>} />
             <Route path="/partner-name" element={<ProtectedRoute><PartnerNameScreen /></ProtectedRoute>} />
+            <Route path="/anniversary" element={<ProtectedRoute><AnniversaryScreen /></ProtectedRoute>} />
             <Route path="/loading" element={<ProtectedRoute><LoadingScreen /></ProtectedRoute>} />
             <Route path="/results" element={<ProtectedRoute><ResultsScreen /></ProtectedRoute>} />
             <Route path="/paywall" element={<ProtectedRoute><PaywallScreen /></ProtectedRoute>} />
             <Route path="/connect" element={<ProtectedRoute><ConnectPartnerScreen /></ProtectedRoute>} />
+            <Route path="/notification" element={<ProtectedRoute><NotificationScreen /></ProtectedRoute>} />
             <Route path="/home" element={<ProtectedRoute><HomeScreen /></ProtectedRoute>} />
             <Route path="/mood" element={<ProtectedRoute><MoodScreen /></ProtectedRoute>} />
             <Route path="/settings" element={<ProtectedRoute><SettingsScreen /></ProtectedRoute>} />
