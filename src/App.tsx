@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import { useKeyboardScroll } from "@/hooks/useKeyboardScroll";
 import SplashScreen from "./pages/SplashScreen";
 import QuizScreen from "./pages/QuizScreen";
 import InsightScreen from "./pages/InsightScreen";
@@ -34,12 +35,18 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
+const KeyboardHandler = () => {
+  useKeyboardScroll();
+  return null;
+};
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <Toaster />
       <Sonner />
       <BrowserRouter>
+        <KeyboardHandler />
         <div className="max-w-[430px] mx-auto min-h-[100dvh] relative">
           <Routes>
             <Route path="/" element={<SplashScreen />} />

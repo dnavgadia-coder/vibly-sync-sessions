@@ -63,12 +63,24 @@
     @apply border-border;
   }
 
+  html {
+    scroll-behavior: smooth;
+    height: -webkit-fill-available;
+  }
+
   body {
     @apply bg-background text-foreground;
     font-family: var(--font-body);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     overflow-x: hidden;
+    min-height: 100dvh;
+    min-height: -webkit-fill-available;
+  }
+
+  /* Prevent iOS from zooming on input focus */
+  input, textarea, select {
+    font-size: 16px !important;
   }
 
   h1, h2, h3, h4, h5, h6 {
