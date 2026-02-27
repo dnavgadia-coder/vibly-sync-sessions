@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { X, Check } from "lucide-react";
 
 const features = [
@@ -14,6 +14,8 @@ const features = [
 
 const PaywallScreen: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const isFromOnboarding = location.state?.from === "onboarding";
   const [selectedPlan, setSelectedPlan] = useState<"yearly" | "monthly">("yearly");
   const [showClose, setShowClose] = useState(false);
   const [showDiscount, setShowDiscount] = useState(false);
@@ -23,10 +25,18 @@ const PaywallScreen: React.FC = () => {
     return () => clearTimeout(timer);
   }, []);
 
-  const handleContinue = () => navigate(-1);
+  const goForward = () => {
+    if (isFromOnboarding) {
+      navigate("/connect");
+    } else {
+      navigate(-1);
+    }
+  };
+
+  const handleContinue = () => goForward();
   const handleClose = () => setShowDiscount(true);
-  const handleClaimDiscount = () => navigate(-1);
-  const handleDismissDiscount = () => navigate(-1);
+  const handleClaimDiscount = () => goForward();
+  const handleDismissDiscount = () => goForward();
 
   return (
     <div className="min-h-[100dvh] flex flex-col relative overflow-hidden overflow-y-auto mesh-bg noise-overlay vignette">
@@ -38,7 +48,7 @@ const PaywallScreen: React.FC = () => {
             animate={{ opacity: 0.6 }}
             exit={{ opacity: 0 }}
             onClick={handleClose}
-            className="absolute top-4 left-5 z-50 w-7 h-7 flex items-center justify-center"
+            className="absolute top-12 left-5 z-50 w-8 h-8 flex items-center justify-center"
           >
             <X className="w-5 h-5 text-muted-foreground" />
           </motion.button>

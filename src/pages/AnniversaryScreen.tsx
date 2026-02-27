@@ -57,7 +57,7 @@ const AnniversaryScreen: React.FC = () => {
             value={date}
             onChange={(e) => setDate(e.target.value)}
             max={new Date().toISOString().split("T")[0]}
-            className="w-full glass-card px-5 py-4 rounded-option text-foreground font-body text-base placeholder:text-muted-foreground focus:outline-none focus:border-primary/30 transition-all"
+            className="w-full max-w-full glass-card px-5 py-4 rounded-option text-foreground font-body text-base placeholder:text-muted-foreground focus:outline-none focus:border-primary/30 transition-all box-border"
             style={{ colorScheme: "dark" }}
           />
         </motion.div>

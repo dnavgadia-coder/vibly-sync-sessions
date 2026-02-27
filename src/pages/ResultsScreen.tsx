@@ -83,7 +83,7 @@ const ResultsScreen: React.FC = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 1 }}
       >
-        <ViblyButton onClick={() => navigate("/paywall")}>
+        <ViblyButton onClick={() => navigate("/paywall", { state: { from: "onboarding" } })}>
           See Full Results →
         </ViblyButton>
       </motion.div>
