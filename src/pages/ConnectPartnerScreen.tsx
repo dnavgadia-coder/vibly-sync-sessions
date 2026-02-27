@@ -157,7 +157,7 @@ const ConnectPartnerScreen: React.FC = () => {
     <div className="min-h-[100dvh] flex flex-col px-5 pt-14 pb-8 relative mesh-bg noise-overlay vignette">
       {/* Not now */}
       <button
-        onClick={() => navigate("/notification")}
+        onClick={() => navigate(-1)}
         className="absolute top-4 right-5 z-10 text-[13px] font-body font-medium text-muted-foreground"
       >
         Not now

@@ -23,10 +23,10 @@ const PaywallScreen: React.FC = () => {
     return () => clearTimeout(timer);
   }, []);
 
-  const handleContinue = () => navigate("/connect");
+  const handleContinue = () => navigate(-1);
   const handleClose = () => setShowDiscount(true);
-  const handleClaimDiscount = () => navigate("/connect");
-  const handleDismissDiscount = () => navigate("/connect");
+  const handleClaimDiscount = () => navigate(-1);
+  const handleDismissDiscount = () => navigate(-1);
 
   return (
     <div className="min-h-[100dvh] flex flex-col relative overflow-hidden overflow-y-auto mesh-bg noise-overlay vignette">
