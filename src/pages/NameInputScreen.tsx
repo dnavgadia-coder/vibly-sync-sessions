@@ -58,7 +58,6 @@ const NameInputScreen: React.FC = () => {
             onChange={(e) => setName(e.target.value)}
             placeholder="Your first name"
             className="w-full glass-card px-5 py-4 rounded-option text-foreground font-body text-base placeholder:text-muted-foreground focus:outline-none focus:border-primary/30 transition-all"
-            autoFocus
           />
         </motion.div>
       </div>
