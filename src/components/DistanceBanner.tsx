@@ -1,6 +1,6 @@
-import React from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
-import { MapPin, Navigation } from "lucide-react";
+import { Navigation } from "lucide-react";
 
 interface DistanceBannerProps {
   distance: number | null;
@@ -42,13 +42,24 @@ function getDistanceLevel(km: number | null): {
 const DistanceBanner: React.FC<DistanceBannerProps> = ({ distance, partnerName, partnerMood }) => {
   const formatted = formatDistance(distance);
   const level = getDistanceLevel(distance);
+  const [pulseKey, setPulseKey] = useState(0);
+  const prevDistRef = useRef<number | null>(distance);
+
+  // Trigger pulse when distance updates in real-time
+  useEffect(() => {
+    if (prevDistRef.current !== null && distance !== null && distance !== prevDistRef.current) {
+      setPulseKey((k) => k + 1);
+    }
+    prevDistRef.current = distance;
+  }, [distance]);
 
   return (
     <motion.div
+      key={`banner-${pulseKey}`}
       className="glass-card-elevated relative overflow-hidden"
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, ease: "easeOut" }}
+      initial={pulseKey === 0 ? { opacity: 0, y: 20 } : { scale: 1.03 }}
+      animate={pulseKey === 0 ? { opacity: 1, y: 0 } : { scale: 1 }}
+      transition={{ duration: pulseKey === 0 ? 0.5 : 0.35, ease: "easeOut" }}
     >
       {/* Top gradient accent line */}
       <div className={`absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r ${level.gradient} opacity-60`} />
@@ -70,7 +81,7 @@ const DistanceBanner: React.FC<DistanceBannerProps> = ({ distance, partnerName, 
           {/* Distance info */}
           <div className="flex-1 min-w-0">
             <p className="text-[10px] font-body font-semibold text-muted-foreground tracking-widest uppercase mb-0.5">
-              {level.label}
+              {level.emoji} {level.label}
             </p>
             <div className="flex items-baseline gap-1.5">
               <span className="text-2xl font-heading font-extrabold text-foreground leading-none">
@@ -78,6 +89,14 @@ const DistanceBanner: React.FC<DistanceBannerProps> = ({ distance, partnerName, 
               </span>
               <span className="text-xs font-body text-muted-foreground">away</span>
             </div>
+            {/* Distance label description */}
+            {distance !== null && (
+              <p className="text-[11px] font-body text-muted-foreground/70 mt-1">
+                {distance < 1
+                  ? `${Math.round(distance * 1000)}m between you & ${partnerName}`
+                  : `${distance < 10 ? distance.toFixed(1) : Math.round(distance)}km between you & ${partnerName}`}
+              </p>
+            )}
           </div>
 
           {/* Partner mood */}
