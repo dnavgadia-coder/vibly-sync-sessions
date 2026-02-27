@@ -24,7 +24,7 @@ const HomeScreen: React.FC = () => {
     submitAnswer(index, question.options[index]);
   };
 
-  // Render tab content inline
+  // Render tab content inline — no early returns to keep hook order stable
   if (activeTab === "mood") {
     return (
       <div className="relative">
