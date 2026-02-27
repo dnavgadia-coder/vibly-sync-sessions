@@ -47,7 +47,7 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <KeyboardHandler />
-        <div className="max-w-[430px] mx-auto min-h-[100dvh] relative">
+        <div className="max-w-[430px] mx-auto min-h-[100dvh] relative overflow-x-hidden">
           <Routes>
             <Route path="/" element={<SplashScreen />} />
             <Route path="/auth" element={<AuthScreen />} />
