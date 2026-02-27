@@ -43,7 +43,7 @@ const AuthScreen: React.FC = () => {
 
     setLoading(true);
     try {
-      // 1) Try direct sign in with app fallback password
+      // 1) Try direct sign in
       const { data: signInData, error: signInErr } = await supabase.auth.signInWithPassword({
         email: trimmed,
         password: FALLBACK_PWD,
@@ -55,43 +55,40 @@ const AuthScreen: React.FC = () => {
           .select("name")
           .eq("id", signInData.user.id)
           .maybeSingle();
-
         navigate(prof?.name ? "/home" : "/name");
         return;
       }
 
-      // 2) If not found, attempt sign up
+      // 2) Sign-in failed — maybe password mismatch. Reset password via edge function, then retry.
+      const resetRes = await supabase.functions.invoke("reset-fallback-pwd", {
+        body: { email: trimmed },
+      });
+
+      if (resetRes.data?.exists) {
+        // Password reset — now sign in again
+        const { data: retryData, error: retryErr } = await supabase.auth.signInWithPassword({
+          email: trimmed,
+          password: FALLBACK_PWD,
+        });
+        if (retryErr) throw retryErr;
+
+        const { data: prof } = await supabase
+          .from("profiles")
+          .select("name")
+          .eq("id", retryData.user!.id)
+          .maybeSingle();
+        navigate(prof?.name ? "/home" : "/name");
+        return;
+      }
+
+      // 3) User doesn't exist — sign up
       const { error: signUpErr } = await supabase.auth.signUp({
         email: trimmed,
         password: FALLBACK_PWD,
       });
+      if (signUpErr) throw signUpErr;
 
-      if (!signUpErr) {
-        navigate("/name");
-        return;
-      }
-
-      // 3) Existing registered user with different credentials -> send magic login link (no error)
-      const alreadyRegistered =
-        (signUpErr as any)?.code === "user_already_exists" ||
-        signUpErr.message?.toLowerCase().includes("already registered");
-
-      if (alreadyRegistered) {
-        const { error: otpErr } = await supabase.auth.signInWithOtp({
-          email: trimmed,
-          options: {
-            shouldCreateUser: false,
-            emailRedirectTo: `${window.location.origin}/auth`,
-          },
-        });
-
-        if (otpErr) throw otpErr;
-
-        toast.success("Email already registered. We sent you a login link.");
-        return;
-      }
-
-      throw signUpErr;
+      navigate("/name");
     } catch (err: any) {
       toast.error(err.message || "Something went wrong");
     } finally {
