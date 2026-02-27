@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 import ViblyButton from "@/components/ViblyButton";
 import { toast } from "sonner";
 
@@ -9,8 +10,25 @@ const FALLBACK_PWD = "vibly_mvp_2026!";
 
 const AuthScreen: React.FC = () => {
   const navigate = useNavigate();
+  const { user, loading: authLoading } = useAuth();
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (authLoading || !user) return;
+
+    const routeUser = async () => {
+      const { data: prof } = await supabase
+        .from("profiles")
+        .select("name")
+        .eq("id", user.id)
+        .maybeSingle();
+
+      navigate(prof?.name ? "/home" : "/name", { replace: true });
+    };
+
+    routeUser();
+  }, [authLoading, user, navigate]);
 
   const handleContinue = async () => {
     const trimmed = email.trim().toLowerCase();
@@ -25,42 +43,55 @@ const AuthScreen: React.FC = () => {
 
     setLoading(true);
     try {
-      // Try sign in first
-      const { error: signInErr } = await supabase.auth.signInWithPassword({
+      // 1) Try direct sign in with app fallback password
+      const { data: signInData, error: signInErr } = await supabase.auth.signInWithPassword({
         email: trimmed,
         password: FALLBACK_PWD,
       });
 
-      if (!signInErr) {
-        // Existing user — check if onboarding is complete
+      if (!signInErr && signInData.user) {
         const { data: prof } = await supabase
           .from("profiles")
           .select("name")
-          .eq("id", (await supabase.auth.getUser()).data.user!.id)
+          .eq("id", signInData.user.id)
           .maybeSingle();
 
         navigate(prof?.name ? "/home" : "/name");
         return;
       }
 
-      // If sign-in failed, try sign up
-      const { data: signUpData, error: signUpErr } = await supabase.auth.signUp({
+      // 2) If not found, attempt sign up
+      const { error: signUpErr } = await supabase.auth.signUp({
         email: trimmed,
         password: FALLBACK_PWD,
       });
 
-      // signUp returns a user with no identities if email already exists (no error thrown)
-      if (signUpErr) throw signUpErr;
-
-      // Check for fake signup (user already exists but signUp didn't error)
-      const identities = signUpData.user?.identities;
-      if (!identities || identities.length === 0) {
-        // Email exists but password didn't match — treat as "already registered"
-        toast.error("Account exists. Please try again.");
+      if (!signUpErr) {
+        navigate("/name");
         return;
       }
 
-      navigate("/name");
+      // 3) Existing registered user with different credentials -> send magic login link (no error)
+      const alreadyRegistered =
+        (signUpErr as any)?.code === "user_already_exists" ||
+        signUpErr.message?.toLowerCase().includes("already registered");
+
+      if (alreadyRegistered) {
+        const { error: otpErr } = await supabase.auth.signInWithOtp({
+          email: trimmed,
+          options: {
+            shouldCreateUser: false,
+            emailRedirectTo: `${window.location.origin}/auth`,
+          },
+        });
+
+        if (otpErr) throw otpErr;
+
+        toast.success("Email already registered. We sent you a login link.");
+        return;
+      }
+
+      throw signUpErr;
     } catch (err: any) {
       toast.error(err.message || "Something went wrong");
     } finally {
@@ -137,3 +168,4 @@ const AuthScreen: React.FC = () => {
 };
 
 export default AuthScreen;
+
