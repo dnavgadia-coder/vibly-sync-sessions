@@ -1,5 +1,6 @@
 import React from "react";
 import { motion } from "framer-motion";
+import { MapPin, Navigation } from "lucide-react";
 
 interface DistanceBannerProps {
   distance: number | null;
@@ -14,15 +15,28 @@ function formatDistance(km: number | null): string {
   return `${Math.round(km)} km`;
 }
 
-function getDistanceLevel(km: number | null): { label: string; emoji: string; color: string; progress: number } {
-  if (km === null) return { label: "Unknown", emoji: "📍", color: "text-muted-foreground", progress: 0 };
-  if (km < 0.1) return { label: "Right here!", emoji: "🫂", color: "text-accent text-glow-mint", progress: 100 };
-  if (km < 1) return { label: "Very close", emoji: "🏃", color: "text-accent", progress: 85 };
-  if (km < 10) return { label: "Nearby", emoji: "🚶", color: "text-lavender", progress: 65 };
-  if (km < 50) return { label: "Same city", emoji: "🏙️", color: "text-amber text-glow-amber", progress: 45 };
-  if (km < 200) return { label: "A drive away", emoji: "🚗", color: "text-amber", progress: 30 };
-  if (km < 1000) return { label: "Far apart", emoji: "✈️", color: "text-primary", progress: 15 };
-  return { label: "Long distance", emoji: "🌍", color: "text-primary text-glow-rose", progress: 5 };
+function getDistanceLevel(km: number | null): {
+  label: string;
+  emoji: string;
+  gradient: string;
+  iconGlow: string;
+  progress: number;
+} {
+  if (km === null)
+    return { label: "Locating…", emoji: "📍", gradient: "from-muted to-muted", iconGlow: "", progress: 0 };
+  if (km < 0.1)
+    return { label: "Right here!", emoji: "🫂", gradient: "from-accent to-accent/60", iconGlow: "glow-mint-strong", progress: 100 };
+  if (km < 1)
+    return { label: "Very close", emoji: "🏃", gradient: "from-accent to-lavender/60", iconGlow: "glow-mint", progress: 85 };
+  if (km < 10)
+    return { label: "Nearby", emoji: "🚶", gradient: "from-lavender to-primary/60", iconGlow: "glow-lavender", progress: 65 };
+  if (km < 50)
+    return { label: "Same city", emoji: "🏙️", gradient: "from-amber to-primary/60", iconGlow: "glow-amber", progress: 45 };
+  if (km < 200)
+    return { label: "A drive away", emoji: "🚗", gradient: "from-amber/80 to-coral/60", iconGlow: "glow-amber", progress: 30 };
+  if (km < 1000)
+    return { label: "Far apart", emoji: "✈️", gradient: "from-primary to-lavender/60", iconGlow: "glow-rose", progress: 15 };
+  return { label: "Long distance", emoji: "🌍", gradient: "from-primary to-coral/60", iconGlow: "glow-rose-strong", progress: 5 };
 }
 
 const DistanceBanner: React.FC<DistanceBannerProps> = ({ distance, partnerName, partnerMood }) => {
@@ -31,53 +45,74 @@ const DistanceBanner: React.FC<DistanceBannerProps> = ({ distance, partnerName, 
 
   return (
     <motion.div
-      className="glass-card-elevated p-5 light-sweep animate-breathe"
+      className="glass-card-elevated relative overflow-hidden"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, ease: "easeOut" }}
     >
-      <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-3">
-          <div className="w-11 h-11 rounded-full bg-primary/12 flex items-center justify-center glow-rose">
-            <span className="text-lg">{level.emoji}</span>
-          </div>
-          <div>
-            <p className="text-xs font-body text-muted-foreground mb-0.5">{level.label}</p>
-            <p className={`text-lg font-heading font-bold ${level.color}`}>
-              {formatted}
-            </p>
-          </div>
-        </div>
-        <div className="text-right">
-          <p className="text-xs font-body text-muted-foreground mb-0.5">
-            {partnerName}'s mood
-          </p>
-          <motion.p
-            className="text-2xl"
-            animate={{ rotate: [0, 5, -5, 0] }}
-            transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-          >
-            {partnerMood || "🔒"}
-          </motion.p>
-        </div>
-      </div>
+      {/* Top gradient accent line */}
+      <div className={`absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r ${level.gradient} opacity-60`} />
 
-      {/* Distance progress bar */}
-      {distance !== null && (
-        <div className="relative">
-          <div className="w-full h-1.5 rounded-full bg-white/[0.06] overflow-hidden">
-            <motion.div
-              className="h-full rounded-full bg-gradient-to-r from-primary via-lavender to-accent"
-              initial={{ width: 0 }}
-              animate={{ width: `${level.progress}%` }}
-              transition={{ delay: 0.3, duration: 0.8, ease: "easeOut" }}
-            />
+      <div className="p-5">
+        {/* Main row */}
+        <div className="flex items-center gap-4">
+          {/* Location icon */}
+          <motion.div
+            className={`relative w-12 h-12 rounded-2xl bg-gradient-to-br ${level.gradient} flex items-center justify-center shrink-0 ${level.iconGlow}`}
+            animate={{ scale: [1, 1.04, 1] }}
+            transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+          >
+            <Navigation className="w-5 h-5 text-foreground" strokeWidth={2.5} />
+            {/* Live indicator dot */}
+            <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-accent border-2 border-background" />
+          </motion.div>
+
+          {/* Distance info */}
+          <div className="flex-1 min-w-0">
+            <p className="text-[10px] font-body font-semibold text-muted-foreground tracking-widest uppercase mb-0.5">
+              {level.label}
+            </p>
+            <div className="flex items-baseline gap-1.5">
+              <span className="text-2xl font-heading font-extrabold text-foreground leading-none">
+                {formatted}
+              </span>
+              <span className="text-xs font-body text-muted-foreground">away</span>
+            </div>
           </div>
-          <div className="flex justify-between mt-1.5">
-            <span className="text-[9px] font-body text-muted-foreground">🌍 Far</span>
-            <span className="text-[9px] font-body text-muted-foreground">🫂 Close</span>
+
+          {/* Partner mood */}
+          <div className="flex flex-col items-center gap-1">
+            <motion.div
+              className="w-11 h-11 rounded-2xl bg-secondary/60 flex items-center justify-center"
+              animate={{ rotate: [0, 4, -4, 0] }}
+              transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+            >
+              <span className="text-xl">{partnerMood || "🔒"}</span>
+            </motion.div>
+            <span className="text-[9px] font-body text-muted-foreground truncate max-w-[60px]">
+              {partnerName}
+            </span>
           </div>
         </div>
-      )}
+
+        {/* Progress bar */}
+        {distance !== null && (
+          <div className="mt-4">
+            <div className="w-full h-1 rounded-full bg-secondary/40 overflow-hidden">
+              <motion.div
+                className={`h-full rounded-full bg-gradient-to-r ${level.gradient}`}
+                initial={{ width: 0 }}
+                animate={{ width: `${level.progress}%` }}
+                transition={{ delay: 0.3, duration: 0.8, ease: "easeOut" }}
+              />
+            </div>
+            <div className="flex justify-between mt-1">
+              <span className="text-[9px] font-body text-muted-foreground">🌍 Far</span>
+              <span className="text-[9px] font-body text-muted-foreground">🫂 Close</span>
+            </div>
+          </div>
+        )}
+      </div>
     </motion.div>
   );
 };
