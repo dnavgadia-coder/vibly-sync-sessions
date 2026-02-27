@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useProfile } from "@/hooks/useProfile";
 import { toast } from "sonner";
-import { LogOut, User, Link, Unlink, Copy, ChevronRight } from "lucide-react";
+import { LogOut, User, Link, Unlink, Copy, ChevronRight, Crown } from "lucide-react";
 import ViblyButton from "@/components/ViblyButton";
 
 const SettingsScreen: React.FC = () => {
@@ -139,12 +139,36 @@ const SettingsScreen: React.FC = () => {
           )}
         </motion.div>
 
+        {/* Subscription / Upgrade */}
+        {profile?.subscription_status !== "premium" && (
+          <motion.div
+            className="glass-card-elevated overflow-hidden"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+          >
+            <button
+              onClick={() => navigate("/paywall")}
+              className="w-full flex items-center gap-3 px-6 py-4 text-left hover:bg-white/[0.02] transition-colors"
+            >
+              <div className="w-10 h-10 rounded-full bg-primary/12 flex items-center justify-center glow-rose">
+                <Crown className="w-5 h-5 text-primary" />
+              </div>
+              <div className="flex-1">
+                <p className="text-sm font-body font-semibold text-foreground">Upgrade to Premium</p>
+                <p className="text-xs font-body text-muted-foreground">Unlock all features for you & your partner</p>
+              </div>
+              <ChevronRight className="w-4 h-4 text-muted-foreground" />
+            </button>
+          </motion.div>
+        )}
+
         {/* Quick Actions */}
         <motion.div
           className="glass-card-elevated overflow-hidden"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
+          transition={{ delay: 0.15 }}
         >
           {!partner && profile?.invite_code && (
             <button
