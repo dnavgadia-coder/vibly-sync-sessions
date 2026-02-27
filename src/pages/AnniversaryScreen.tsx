@@ -4,17 +4,17 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import ViblyButton from "@/components/ViblyButton";
 
-const PartnerNameScreen: React.FC = () => {
+const AnniversaryScreen: React.FC = () => {
   const navigate = useNavigate();
-  const [name, setName] = useState("");
+  const [date, setDate] = useState("");
 
   const handleContinue = async () => {
-    if (!name.trim()) return;
+    if (!date) return;
     const { data: { user } } = await supabase.auth.getUser();
     if (user) {
-      await supabase.from("profiles").update({ partner_name: name.trim() }).eq("id", user.id);
+      await supabase.from("profiles").update({ start_date: date }).eq("id", user.id);
     }
-    navigate("/anniversary");
+    navigate("/loading");
   };
 
   return (
@@ -26,7 +26,7 @@ const PartnerNameScreen: React.FC = () => {
           animate={{ scale: 1, opacity: 1 }}
           transition={{ type: "spring", bounce: 0.4 }}
         >
-          💕
+          💛
         </motion.div>
 
         <motion.h2
@@ -35,7 +35,7 @@ const PartnerNameScreen: React.FC = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1, ease: [0.34, 1.56, 0.64, 1] }}
         >
-          What's your partner's name?
+          When did it all start?
         </motion.h2>
 
         <motion.p
@@ -44,7 +44,7 @@ const PartnerNameScreen: React.FC = () => {
           animate={{ opacity: 1 }}
           transition={{ delay: 0.2 }}
         >
-          We'll personalize your experience
+          We'll count every day together 💛
         </motion.p>
 
         <motion.div
@@ -53,18 +53,13 @@ const PartnerNameScreen: React.FC = () => {
           transition={{ delay: 0.3 }}
         >
           <input
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="Their first name"
+            type="date"
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+            max={new Date().toISOString().split("T")[0]}
             className="w-full glass-card px-5 py-4 rounded-option text-foreground font-body text-base placeholder:text-muted-foreground focus:outline-none focus:border-primary/30 transition-all"
-            autoFocus
+            style={{ colorScheme: "dark" }}
           />
-          {name.trim() && (
-            <p className="text-xs font-body text-muted-foreground text-center mt-3">
-              Don't worry, we won't tell {name.trim()} what you said 😏
-            </p>
-          )}
         </motion.div>
       </div>
 
@@ -74,7 +69,7 @@ const PartnerNameScreen: React.FC = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.5 }}
       >
-        <ViblyButton onClick={handleContinue}>
+        <ViblyButton onClick={handleContinue} disabled={!date}>
           Continue →
         </ViblyButton>
       </motion.div>
@@ -82,4 +77,4 @@ const PartnerNameScreen: React.FC = () => {
   );
 };
 
-export default PartnerNameScreen;
+export default AnniversaryScreen;

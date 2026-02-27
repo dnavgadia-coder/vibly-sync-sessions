@@ -1,71 +1,89 @@
 import React, { useEffect, useState } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
+import ProgressBar from "@/components/ProgressBar";
 
 const steps = [
-  "Analyzing your answers...",
-  "Building your vibe profile...",
-  "Finding your match patterns...",
-  "Almost ready...",
+  "✨ Analyzing your connection style...",
+  "💕 Preparing your first questions...",
+  "🎯 Calibrating your Vibe Score...",
 ];
 
 const LoadingScreen: React.FC = () => {
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(0);
+  const [progress, setProgress] = useState(0);
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentStep((prev) => {
-        if (prev >= steps.length - 1) {
-          clearInterval(interval);
-          setTimeout(() => navigate("/connect"), 600);
-          return prev;
-        }
-        return prev + 1;
-      });
-    }, 900);
-    return () => clearInterval(interval);
+    // Animate progress bar from 0 to 100 over 3 seconds
+    const start = Date.now();
+    const duration = 3000;
+    const frame = () => {
+      const elapsed = Date.now() - start;
+      const p = Math.min(100, (elapsed / duration) * 100);
+      setProgress(p);
+      if (elapsed < duration) requestAnimationFrame(frame);
+    };
+    requestAnimationFrame(frame);
+
+    // Auto advance after 3 seconds
+    const timeout = setTimeout(() => navigate("/results"), 3200);
+    return () => clearTimeout(timeout);
   }, [navigate]);
 
-  const progress = ((currentStep + 1) / steps.length) * 100;
+  // Step text transitions
+  useEffect(() => {
+    const timers = steps.map((_, i) =>
+      setTimeout(() => setCurrentStep(i), i * 800)
+    );
+    return () => timers.forEach(clearTimeout);
+  }, []);
 
   return (
-    <div className="min-h-[100dvh] flex flex-col items-center justify-center px-5 mesh-bg noise-overlay vignette">
-      {/* Ambient glow */}
-      <motion.div
-        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 rounded-full blur-[120px] pointer-events-none"
-        style={{ background: "radial-gradient(circle, hsla(340,100%,61%,0.1) 0%, transparent 70%)" }}
-        animate={{ scale: [1, 1.2, 1] }}
-        transition={{ duration: 3, repeat: Infinity }}
-      />
+    <div className="min-h-[100dvh] flex flex-col px-5 pt-14 pb-8 mesh-bg noise-overlay vignette">
+      <ProgressBar progress={70} step={10} totalSteps={12} />
 
-      <div className="relative z-10 flex flex-col items-center w-full max-w-[280px]">
-        {/* Spinner */}
+      <div className="flex-1 flex flex-col items-center justify-center relative z-10">
+        {/* Ambient glow */}
         <motion.div
-          className="w-16 h-16 rounded-full border-2 border-white/[0.06] border-t-primary mb-10"
-          animate={{ rotate: 360 }}
-          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 rounded-full blur-[120px] pointer-events-none"
+          style={{ background: "radial-gradient(circle, hsla(340,100%,61%,0.1) 0%, transparent 70%)" }}
+          animate={{ scale: [1, 1.2, 1] }}
+          transition={{ duration: 3, repeat: Infinity }}
         />
 
+        <motion.h2
+          className="font-heading font-bold text-[20px] text-foreground text-center mb-8"
+          initial={{ opacity: 0, y: -8 }}
+          animate={{ opacity: 1, y: 0 }}
+        >
+          Building your Vibe Profile...
+        </motion.h2>
+
         {/* Progress bar */}
-        <div className="w-full h-1 bg-white/[0.04] rounded-pill overflow-hidden mb-6">
+        <div className="w-full max-w-[280px] h-1.5 bg-white/[0.05] rounded-pill overflow-hidden mb-8">
           <motion.div
-            className="h-full rounded-pill bg-gradient-rose"
+            className="h-full rounded-pill"
+            style={{ background: "linear-gradient(90deg, hsl(340, 100%, 61%), hsl(263, 86%, 76%))" }}
             animate={{ width: `${progress}%` }}
-            transition={{ duration: 0.5, ease: "easeOut" }}
+            transition={{ duration: 0.1 }}
           />
         </div>
 
         {/* Step text */}
-        <motion.p
-          key={currentStep}
-          className="text-sm font-body text-muted-foreground text-center"
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -8 }}
-        >
-          {steps[currentStep]}
-        </motion.p>
+        <div className="flex flex-col gap-3 items-center">
+          {steps.map((step, i) => (
+            <motion.p
+              key={i}
+              className="text-sm font-body text-muted-foreground"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: i <= currentStep ? 1 : 0 }}
+              transition={{ duration: 0.4 }}
+            >
+              {step}
+            </motion.p>
+          ))}
+        </div>
       </div>
     </div>
   );

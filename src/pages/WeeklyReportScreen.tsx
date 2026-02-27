@@ -34,7 +34,7 @@ const WeeklyReportScreen: React.FC = () => {
           <div className="absolute -top-px left-1/4 right-1/4 h-px bg-gradient-to-r from-transparent via-primary/25 to-transparent" />
 
           <p className="text-[10px] font-body font-semibold text-muted-foreground tracking-widest uppercase mb-1">
-            SYNC REPORT
+            WEEK 1 SYNC REPORT
           </p>
           <h2 className="font-heading font-bold text-[22px] text-foreground mb-6">
             {userName} & {partnerName}
@@ -118,14 +118,21 @@ const WeeklyReportScreen: React.FC = () => {
       </div>
 
       <motion.div
-        className="w-full mt-8 relative z-10"
+        className="w-full mt-8 relative z-10 flex flex-col gap-3"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 1 }}
       >
-        <ViblyButton variant="mint" onClick={() => navigate("/home")}>
-          ← Back to Home
+        <ViblyButton variant="mint" onClick={() => {
+          if (navigator.share) {
+            navigator.share({ title: "Vibly Sync Card", text: `${userName} & ${partnerName} — ${matchPercent}% match this week! 💕` });
+          }
+        }}>
+          Share to Stories →
         </ViblyButton>
+        <button onClick={() => navigate("/home")} className="w-full py-3 text-sm font-body text-muted-foreground text-center">
+          ← Back to Home
+        </button>
       </motion.div>
     </div>
   );
