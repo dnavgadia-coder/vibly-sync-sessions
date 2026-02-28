@@ -1,27 +1,70 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 import { useProfile } from "@/hooks/useProfile";
 import { useDailyQuestion } from "@/hooks/useDailyQuestion";
 import { useLocationTracking } from "@/hooks/useLocationTracking";
+import { useInAppPurchase } from "@/hooks/useInAppPurchase";
+import { usePushRegistration, getPushPermissionState } from "@/hooks/usePushRegistration";
 import OptionCard from "@/components/OptionCard";
 import DistanceBanner from "@/components/DistanceBanner";
 import MoodScreen from "@/pages/MoodScreen";
 import SettingsScreen from "@/pages/SettingsScreen";
-import { Settings } from "lucide-react";
+import { MessageCircle, Smile, BarChart3, Settings, Lock, Sparkles, Bell, X } from "lucide-react";
+
+const PUSH_PROMPT_DISMISSED_KEY = "vibly_push_prompt_dismissed";
 
 type TabId = "today" | "mood" | "weekly" | "settings";
 
 const HomeScreen: React.FC = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<TabId>("today");
-  const { profile, partner, distance, daysCount, loading: profileLoading } = useProfile();
+  const { profile, partner, distance, daysCount, loading: profileLoading, refetch: refetchProfile } = useProfile();
   const { question, myAnswer, partnerAnswered, partnerAnswer, submitting, submitAnswer } = useDailyQuestion();
+  const { isPremium } = useInAppPurchase();
+  const { isNative, registerAndSaveToken } = usePushRegistration();
   useLocationTracking();
 
-  const handleAnswer = (index: number) => {
+  const [showPushPrompt, setShowPushPrompt] = useState(false);
+  const [pushPromptLoading, setPushPromptLoading] = useState(false);
+
+  useEffect(() => {
+    if (!isNative) return;
+    const check = async () => {
+      const dismissed = localStorage.getItem(PUSH_PROMPT_DISMISSED_KEY);
+      if (dismissed) return;
+      const state = await getPushPermissionState();
+      if (state === "prompt") setShowPushPrompt(true);
+    };
+    void check();
+  }, [isNative]);
+
+  const handlePushEnable = async () => {
+    setPushPromptLoading(true);
+    const result = await registerAndSaveToken();
+    setPushPromptLoading(false);
+    if (result.ok) {
+      setShowPushPrompt(false);
+      toast.success("Notifications enabled");
+    } else if (result.error && result.error !== "Permission denied") {
+      toast.error(result.error, { duration: 6000 });
+    } else {
+      setShowPushPrompt(false);
+    }
+  };
+
+  const handlePushDismiss = () => {
+    setShowPushPrompt(false);
+    localStorage.setItem(PUSH_PROMPT_DISMISSED_KEY, "1");
+  };
+
+  const isPremiumUser = isPremium || profile?.subscription_status === "active" || profile?.subscription_status === "premium";
+
+  const handleAnswer = async (index: number) => {
     if (myAnswer !== null || !question) return;
-    submitAnswer(index, question.options[index]);
+    await submitAnswer(index, question.options[index]);
+    if (!isPremiumUser) navigate("/paywall");
   };
 
   // Render tab content inline — no early returns to keep hook order stable
@@ -29,7 +72,7 @@ const HomeScreen: React.FC = () => {
     return (
       <div className="relative">
         <MoodScreen />
-        <BottomTabBar activeTab={activeTab} setActiveTab={setActiveTab} navigate={navigate} />
+        <BottomTabBar activeTab={activeTab} setActiveTab={setActiveTab} navigate={navigate} isPremium={isPremiumUser} />
       </div>
     );
   }
@@ -37,8 +80,8 @@ const HomeScreen: React.FC = () => {
   if (activeTab === "settings") {
     return (
       <div className="relative">
-        <SettingsScreen />
-        <BottomTabBar activeTab={activeTab} setActiveTab={setActiveTab} navigate={navigate} />
+        <SettingsScreen onPartnerUnlinked={refetchProfile} />
+        <BottomTabBar activeTab={activeTab} setActiveTab={setActiveTab} navigate={navigate} isPremium={isPremiumUser} />
       </div>
     );
   }
@@ -59,13 +102,75 @@ const HomeScreen: React.FC = () => {
       </div>
 
       <div className="px-5 flex flex-col gap-4 relative z-10">
-        {/* Distance banner */}
-        {profile?.partner_id && (
+        {/* Push permission prompt on home — show when native and not yet granted */}
+        <AnimatePresence>
+          {showPushPrompt && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="glass-card-elevated p-4 rounded-2xl"
+            >
+              <div className="flex items-start gap-3">
+                <div className="w-10 h-10 rounded-xl bg-primary/15 flex items-center justify-center shrink-0">
+                  <Bell className="w-5 h-5 text-primary" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-heading font-bold text-foreground text-sm">Get notified</p>
+                  <p className="text-xs font-body text-muted-foreground mt-0.5">
+                    When your partner answers, when you get close, and more.
+                  </p>
+                  <div className="flex gap-2 mt-3">
+                    <button
+                      onClick={handlePushEnable}
+                      disabled={pushPromptLoading}
+                      className="py-2 px-4 rounded-xl bg-primary text-white text-xs font-heading font-bold disabled:opacity-60"
+                    >
+                      {pushPromptLoading ? "Enabling…" : "Enable"}
+                    </button>
+                    <button
+                      onClick={handlePushDismiss}
+                      className="py-2 px-4 rounded-xl text-xs font-body text-muted-foreground"
+                    >
+                      Not now
+                    </button>
+                  </div>
+                </div>
+                <button onClick={handlePushDismiss} className="p-1 shrink-0 text-muted-foreground">
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Distance: premium only; free users see teaser */}
+        {profile?.partner_id && isPremiumUser && (
           <DistanceBanner
             distance={distance}
             partnerName={partner?.name || "Partner"}
             partnerMood={partner?.current_mood || null}
           />
+        )}
+        {profile?.partner_id && !isPremiumUser && (
+          <motion.button
+            onClick={() => navigate("/paywall")}
+            className="glass-card-elevated p-5 text-left"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            whileTap={{ scale: 0.98 }}
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-11 h-11 rounded-full bg-primary/15 flex items-center justify-center">
+                <Lock className="w-5 h-5 text-primary" />
+              </div>
+              <div className="flex-1">
+                <p className="font-heading font-bold text-foreground">Connect Premium to see distance</p>
+                <p className="text-xs font-body text-muted-foreground">See how far you and your partner are in real time</p>
+              </div>
+              <Sparkles className="w-5 h-5 text-primary" />
+            </div>
+          </motion.button>
         )}
 
         {/* Not connected banner */}
@@ -90,8 +195,24 @@ const HomeScreen: React.FC = () => {
           </motion.button>
         )}
 
-        {/* Daily Question */}
-        {question && (
+        {/* Daily Question: free = 1 per day, then paywall */}
+        {!isPremiumUser && myAnswer !== null && (
+          <motion.div
+            className="glass-card-elevated p-6 text-center"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
+            <p className="font-heading font-bold text-foreground mb-2">You've used your free question for today</p>
+            <p className="text-sm font-body text-muted-foreground mb-5">Unlock unlimited daily questions and more with Premium.</p>
+            <button
+              onClick={() => navigate("/paywall")}
+              className="w-full py-4 rounded-[20px] text-white font-heading font-bold text-base bg-gradient-rose glow-rose-strong"
+            >
+              Unlock unlimited questions →
+            </button>
+          </motion.div>
+        )}
+        {question && (isPremiumUser || myAnswer === null) && (
           <motion.div
             className="glass-card-elevated p-6 relative overflow-hidden"
             style={{
@@ -157,7 +278,7 @@ const HomeScreen: React.FC = () => {
         )}
       </div>
 
-      <BottomTabBar activeTab={activeTab} setActiveTab={setActiveTab} navigate={navigate} />
+      <BottomTabBar activeTab={activeTab} setActiveTab={setActiveTab} navigate={navigate} isPremium={isPremiumUser} />
     </div>
   );
 };
@@ -166,41 +287,47 @@ function BottomTabBar({
   activeTab,
   setActiveTab,
   navigate,
+  isPremium,
 }: {
   activeTab: TabId;
   setActiveTab: (tab: TabId) => void;
   navigate: (path: string) => void;
+  isPremium: boolean;
 }) {
-  const tabs = [
-    { id: "today" as TabId, emoji: "💬", label: "Today" },
-    { id: "mood" as TabId, emoji: "😊", label: "Mood" },
-    { id: "weekly" as TabId, emoji: "📊", label: "Weekly" },
-    { id: "settings" as TabId, emoji: "⚙️", label: "Settings" },
+  const tabs: { id: TabId; label: string; icon: React.ReactNode }[] = [
+    { id: "today", label: "Today", icon: <MessageCircle className="w-5 h-5" strokeWidth={2} /> },
+    { id: "mood", label: "Mood", icon: <Smile className="w-5 h-5" strokeWidth={2} /> },
+    { id: "weekly", label: "Weekly", icon: <BarChart3 className="w-5 h-5" strokeWidth={2} /> },
+    { id: "settings", label: "Settings", icon: <Settings className="w-5 h-5" strokeWidth={2} /> },
   ];
 
   return (
     <div className="fixed bottom-6 left-1/2 -translate-x-1/2 w-[calc(100%-40px)] max-w-[390px] z-50">
-      <div className="glass-card-elevated p-1.5 flex items-center justify-around !rounded-pill">
-        {tabs.map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => {
-              if (tab.id === "weekly") {
-                navigate("/weekly");
-              } else {
-                setActiveTab(tab.id);
-              }
-            }}
-            className={`flex items-center gap-1.5 px-4 py-2.5 rounded-pill text-sm font-body font-medium transition-all duration-200 ${
-              activeTab === tab.id
-                ? "bg-primary/12 text-primary glow-rose"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            <span className="text-base">{tab.emoji}</span>
-            <span className="hidden sm:inline">{tab.label}</span>
-          </button>
-        ))}
+      <div className="glass-card-elevated p-1.5 flex items-center justify-around !rounded-[22px]">
+        {tabs.map((tab) => {
+          const isActive = activeTab === tab.id;
+          return (
+            <button
+              key={tab.id}
+              onClick={() => {
+                if (tab.id === "weekly") {
+                  if (!isPremium) navigate("/paywall");
+                  else navigate("/weekly");
+                } else {
+                  setActiveTab(tab.id);
+                }
+              }}
+              className={`flex items-center gap-1.5 px-4 py-2.5 rounded-[18px] text-sm font-body font-medium transition-all duration-200 ${
+                isActive
+                  ? "bg-primary/15 text-primary shadow-sm"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              {tab.icon}
+              <span className="hidden sm:inline">{tab.label}</span>
+            </button>
+          );
+        })}
       </div>
     </div>
   );

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate, useLocation } from "react-router-dom";
 import { X, Check } from "lucide-react";
+import { useInAppPurchase, type IAPPlanId } from "@/hooks/useInAppPurchase";
 
 const features = [
   "Premium for you and your partner",
@@ -19,6 +20,7 @@ const PaywallScreen: React.FC = () => {
   const [selectedPlan, setSelectedPlan] = useState<"yearly" | "monthly">("yearly");
   const [showClose, setShowClose] = useState(false);
   const [showDiscount, setShowDiscount] = useState(false);
+  const { isAvailable, isReady, loading, error, purchase, restore } = useInAppPurchase();
 
   useEffect(() => {
     const timer = setTimeout(() => setShowClose(true), 3000);
@@ -33,9 +35,26 @@ const PaywallScreen: React.FC = () => {
     }
   };
 
-  const handleContinue = () => goForward();
+  const handleContinue = async () => {
+    if (!isAvailable) {
+      // In browser or store not loaded — don't redirect; user must open the app to subscribe
+      return;
+    }
+    const success = await purchase(selectedPlan as IAPPlanId);
+    if (success) goForward();
+  };
+
+  const handleRestore = async () => {
+    const success = await restore();
+    if (success) goForward();
+  };
+
   const handleClose = () => setShowDiscount(true);
-  const handleClaimDiscount = () => goForward();
+  const handleClaimDiscount = async () => {
+    if (!isAvailable) return;
+    const success = await purchase(selectedPlan as IAPPlanId);
+    if (success) goForward();
+  };
   const handleDismissDiscount = () => goForward();
 
   return (
@@ -169,13 +188,46 @@ const PaywallScreen: React.FC = () => {
           </div>
         </div>
 
+        {/* IAP error */}
+        {error && (
+          <p className="text-xs font-body text-destructive mt-2 text-center">{error}</p>
+        )}
+
         {/* CTA */}
         <button
           onClick={handleContinue}
-          className="w-full py-4 rounded-[20px] text-white font-heading font-bold text-base mt-5 bg-gradient-rose glow-rose-strong"
+          disabled={loading}
+          className="w-full py-4 rounded-[20px] text-white font-heading font-bold text-base mt-5 bg-gradient-rose glow-rose-strong disabled:opacity-60"
         >
-          Continue
+          {loading
+            ? "Processing…"
+            : isAvailable && !isReady
+              ? "Loading store…"
+              : !isAvailable
+                ? "Open the app to subscribe"
+                : "Continue"}
         </button>
+
+        {isAvailable && (
+          <button
+            type="button"
+            onClick={handleRestore}
+            disabled={loading}
+            className="text-[10px] font-body text-primary mt-2 underline disabled:opacity-60"
+          >
+            Restore purchases
+          </button>
+        )}
+
+        {!isAvailable && (
+          <button
+            type="button"
+            onClick={goForward}
+            className="text-xs font-body text-muted-foreground mt-3 underline"
+          >
+            Continue without subscribing
+          </button>
+        )}
 
         <p className="text-[10px] font-body text-center mt-3 text-muted-foreground">
           Terms of Use · Privacy Policy
@@ -245,13 +297,28 @@ const PaywallScreen: React.FC = () => {
 
                 <button
                   onClick={handleClaimDiscount}
-                  className="w-full py-4 rounded-[20px] text-white font-heading font-bold text-base mt-5 bg-gradient-rose glow-rose-strong"
+                  disabled={loading}
+                  className="w-full py-4 rounded-[20px] text-white font-heading font-bold text-base mt-5 bg-gradient-rose glow-rose-strong disabled:opacity-60"
                 >
-                  Claim the offer
+                  {loading ? "Processing…" : !isAvailable ? "Open the app to claim" : "Claim the offer"}
                 </button>
 
+                {!isAvailable && (
+                  <button type="button" onClick={goForward} className="text-xs font-body text-muted-foreground mt-2 underline">
+                    Continue without subscribing
+                  </button>
+                )}
+
                 <p className="text-[10px] font-body mt-3 text-muted-foreground">
-                  Terms of Use · Privacy Policy · Restore
+                  Terms of Use · Privacy Policy
+                  {isAvailable && (
+                    <>
+                      {" · "}
+                      <button type="button" onClick={handleRestore} disabled={loading} className="underline">
+                        Restore
+                      </button>
+                    </>
+                  )}
                 </p>
               </div>
             </motion.div>

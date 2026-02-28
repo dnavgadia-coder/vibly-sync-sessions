@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "./useAuth";
+import { createNotificationForUser } from "./useNotifications";
 import type { Json } from "@/integrations/supabase/types";
 
 export interface DailyQuestion {
@@ -78,7 +79,7 @@ export function useDailyQuestion() {
 
     const { data: prof } = await supabase
       .from("profiles")
-      .select("couple_id, streak_count")
+      .select("couple_id, streak_count, partner_id, name")
       .eq("id", user.id)
       .maybeSingle();
 
@@ -102,6 +103,16 @@ export function useDailyQuestion() {
       .eq("id", user.id);
 
     setMyAnswer(index);
+
+    if (prof?.partner_id) {
+      createNotificationForUser(
+        prof.partner_id,
+        "partner_answered",
+        "Today's question answered",
+        `${prof.name || "Your partner"} answered today's question. Open the app to see their answer!`,
+        { question_id: question.id }
+      ).catch(() => {});
+    }
 
     // Check if partner also answered — reveal
     if (prof?.couple_id) {

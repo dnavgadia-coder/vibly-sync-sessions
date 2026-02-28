@@ -3,14 +3,21 @@ import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useProfile } from "@/hooks/useProfile";
+import { useInAppPurchase } from "@/hooks/useInAppPurchase";
 import { toast } from "sonner";
 import { LogOut, User, Link, Unlink, Copy, ChevronRight, Crown } from "lucide-react";
 import ViblyButton from "@/components/ViblyButton";
 
-const SettingsScreen: React.FC = () => {
+interface SettingsScreenProps {
+  onPartnerUnlinked?: () => void;
+}
+
+const SettingsScreen: React.FC<SettingsScreenProps> = ({ onPartnerUnlinked }) => {
   const navigate = useNavigate();
   const { profile, partner, daysCount, refetch } = useProfile();
+  const { isPremium } = useInAppPurchase();
   const [loggingOut, setLoggingOut] = useState(false);
+  const isPremiumUser = isPremium || profile?.subscription_status === "active" || profile?.subscription_status === "premium";
 
   const handleLogout = async () => {
     setLoggingOut(true);
@@ -93,6 +100,7 @@ const SettingsScreen: React.FC = () => {
                   } else {
                     toast.success("Partner unlinked");
                     refetch();
+                    onPartnerUnlinked?.();
                   }
                 }}
                 className="w-full mt-4 flex items-center justify-center gap-2 py-3 rounded-option glass-card text-sm font-body font-medium text-destructive"
@@ -139,8 +147,8 @@ const SettingsScreen: React.FC = () => {
           )}
         </motion.div>
 
-        {/* Subscription / Upgrade */}
-        {profile?.subscription_status !== "premium" && (
+        {/* Subscription / Upgrade — hide when user has IAP premium or profile subscription */}
+        {!isPremiumUser && (
           <motion.div
             className="glass-card-elevated overflow-hidden"
             initial={{ opacity: 0, y: 20 }}

@@ -1,8 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
+import { useInAppPurchase } from "@/hooks/useInAppPurchase";
+import { createNotificationForUser } from "@/hooks/useNotifications";
+import { Lock } from "lucide-react";
 
 const MOODS = [
   { emoji: "😍", label: "Amazing" },
@@ -14,8 +18,11 @@ const MOODS = [
 ];
 
 const MoodScreen: React.FC = () => {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const { profile, partner, refetch } = useProfile();
+  const { isPremium } = useInAppPurchase();
+  const isPremiumUser = isPremium || profile?.subscription_status === "active" || profile?.subscription_status === "premium";
   const [selectedMood, setSelectedMood] = useState<string | null>(null);
   const [justSelected, setJustSelected] = useState(false);
   const [showSent, setShowSent] = useState(false);
@@ -38,6 +45,17 @@ const MoodScreen: React.FC = () => {
       .from("profiles")
       .update({ current_mood: selectedMood })
       .eq("id", user.id);
+
+    if (profile?.partner_id) {
+      const label = MOODS.find((m) => m.emoji === selectedMood)?.label || "something";
+      createNotificationForUser(
+        profile.partner_id,
+        "mood_update",
+        `${profile.name || "Your partner"} is feeling ${label}`,
+        `They shared their mood with you 💕`,
+        { mood: selectedMood, label }
+      ).catch(() => {});
+    }
 
     setSaving(false);
     setJustSelected(false);
@@ -143,6 +161,24 @@ const MoodScreen: React.FC = () => {
             </div>
           )}
         </motion.div>
+
+        {/* Premium: full mood history — free users see teaser */}
+        {!isPremiumUser && (
+          <motion.button
+            onClick={() => navigate("/paywall")}
+            className="glass-card-elevated p-4 flex items-center gap-3 text-left"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
+            <div className="w-10 h-10 rounded-full bg-primary/15 flex items-center justify-center shrink-0">
+              <Lock className="w-5 h-5 text-primary" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="font-heading font-bold text-foreground text-sm">Full mood history & trends</p>
+              <p className="text-xs font-body text-muted-foreground">Unlock with Premium to see history and &quot;mood together&quot; views</p>
+            </div>
+          </motion.button>
+        )}
       </div>
 
       {/* Sent overlay */}

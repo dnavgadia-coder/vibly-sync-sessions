@@ -4,6 +4,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Copy, Check } from "lucide-react";
+import { createNotificationForUser } from "@/hooks/useNotifications";
 
 const ConnectPartnerScreen: React.FC = () => {
   const navigate = useNavigate();
@@ -78,6 +79,20 @@ const ConnectPartnerScreen: React.FC = () => {
     try {
       const { error } = await supabase.rpc("link_partners", { _partner_id: foundPartner.id });
       if (error) throw error;
+
+      const { data: { user } } = await supabase.auth.getUser();
+      const { data: myProfile } = user
+        ? await supabase.from("profiles").select("name").eq("id", user.id).maybeSingle()
+        : { data: null };
+      const myName = myProfile?.name || "Your partner";
+      createNotificationForUser(
+        foundPartner.id,
+        "partner_joined",
+        `${myName} connected with you! 💕`,
+        "You're now linked in Vibly. Start your journey together!",
+        { partner_id: user?.id }
+      ).catch(() => {});
+
       setLinked(true);
       setTimeout(() => navigate("/notification"), 2500);
     } catch (err: any) {
@@ -219,7 +234,9 @@ const ConnectPartnerScreen: React.FC = () => {
             onChange={(e) => setPartnerCode(e.target.value.toUpperCase())}
             placeholder="Enter the code"
             maxLength={8}
-            inputMode="numeric"
+            inputMode="text"
+            autoCapitalize="characters"
+            autoCorrect="off"
             className="w-full mt-3 rounded-[14px] px-4 py-3.5 text-center font-body text-base focus:outline-none bg-input text-foreground placeholder:text-muted-foreground border border-border focus:border-primary/30 transition-colors"
           />
           <button

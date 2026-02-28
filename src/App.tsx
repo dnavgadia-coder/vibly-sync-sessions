@@ -5,7 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useKeyboardScroll } from "@/hooks/useKeyboardScroll";
-import SplashScreen from "./pages/SplashScreen";
+import EntryRoute from "./pages/EntryRoute";
 import QuizScreen from "./pages/QuizScreen";
 import InsightScreen from "./pages/InsightScreen";
 import SocialProofScreen from "./pages/SocialProofScreen";
@@ -49,7 +49,7 @@ const App = () => (
         <KeyboardHandler />
         <div className="max-w-[430px] mx-auto min-h-[100dvh] relative overflow-x-hidden">
           <Routes>
-            <Route path="/" element={<SplashScreen />} />
+            <Route path="/" element={<EntryRoute />} />
             <Route path="/auth" element={<AuthScreen />} />
             <Route path="/quiz" element={<QuizScreen />} />
             <Route path="/insight" element={<InsightScreen />} />

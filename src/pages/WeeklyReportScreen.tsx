@@ -1,18 +1,45 @@
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { useWeeklyReport } from "@/hooks/useWeeklyReport";
+import { useProfile } from "@/hooks/useProfile";
+import { useInAppPurchase } from "@/hooks/useInAppPurchase";
 import ViblyButton from "@/components/ViblyButton";
+
+const PREMIUM_CHECK_DELAY_MS = 2200;
 
 const WeeklyReportScreen: React.FC = () => {
   const navigate = useNavigate();
+  const { profile } = useProfile();
+  const { isPremium, isReady: iapReady } = useInAppPurchase();
   const {
     streak, matchPercent, answeredCount,
     bestMatch, biggestMiss,
     userName, partnerName, loading,
   } = useWeeklyReport();
+  const redirectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  if (loading) {
+  const isPremiumUser = isPremium || profile?.subscription_status === "active" || profile?.subscription_status === "premium";
+
+  useEffect(() => {
+    if (loading) return;
+    if (!iapReady) return;
+    if (isPremiumUser) return;
+
+    redirectTimeoutRef.current = setTimeout(() => {
+      redirectTimeoutRef.current = null;
+      navigate("/paywall", { replace: true });
+    }, PREMIUM_CHECK_DELAY_MS);
+
+    return () => {
+      if (redirectTimeoutRef.current) {
+        clearTimeout(redirectTimeoutRef.current);
+        redirectTimeoutRef.current = null;
+      }
+    };
+  }, [loading, iapReady, isPremiumUser, navigate]);
+
+  if (loading || !isPremiumUser) {
     return (
       <div className="min-h-[100dvh] flex items-center justify-center mesh-bg noise-overlay vignette">
         <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1 }}>
