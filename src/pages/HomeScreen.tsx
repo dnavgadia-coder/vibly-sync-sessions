@@ -187,10 +187,10 @@ const HomeScreen: React.FC = () => {
                 <span className="text-lg">💌</span>
               </div>
               <div className="flex-1">
-                <p className="font-heading font-bold text-foreground">Connect with your partner</p>
-                <p className="text-xs font-body text-muted-foreground">Share your invite code to get started</p>
+                <p className="font-heading font-bold text-[15px] text-foreground">Connect with your partner</p>
+                <p className="text-[13px] font-body text-muted-foreground">Share your invite code to get started</p>
               </div>
-              <span className="text-muted-foreground">→</span>
+              <span className="text-lg text-muted-foreground">→</span>
             </div>
           </motion.button>
         )}

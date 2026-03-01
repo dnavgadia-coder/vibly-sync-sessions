@@ -195,7 +195,7 @@ const ConnectPartnerScreen: React.FC = () => {
           <p className="font-heading font-extrabold text-[36px] text-center mt-3 tracking-[3px] text-primary">
             {myCode || "------"}
           </p>
-          <p className="text-[13px] font-body text-center mt-2 text-muted-foreground">
+          <p className="text-[15px] font-body text-center mt-2 text-muted-foreground">
             ⏱ {countdown || "Loading..."}
           </p>
           <button
