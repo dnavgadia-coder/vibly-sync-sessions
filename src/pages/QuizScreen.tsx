@@ -125,13 +125,13 @@ const QuizScreen: React.FC = () => {
   return (
     <div className="min-h-[100dvh] flex flex-col px-5 pt-14 pb-8 mesh-bg noise-overlay vignette">
       <div className="flex items-center justify-between mb-4 relative z-10">
-        <button onClick={handleBack} className="w-8 h-8 flex items-center justify-center rounded-full bg-white/[0.06]">
-          <ChevronLeft className="w-4 h-4 text-foreground" />
+        <button onClick={handleBack} className="w-8 h-8 flex items-center justify-center rounded-full bg-white/10">
+          <ChevronLeft className="w-5 h-5 text-foreground" />
         </button>
-        <span className="text-[13px] font-body text-muted-foreground">Step {stepNumber} of {TOTAL_ONBOARDING_STEPS}</span>
+        <span className="text-[13px] font-body text-foreground/70">Step {stepNumber} of {TOTAL_ONBOARDING_STEPS}</span>
       </div>
 
-      <ProgressBar progress={progress} step={stepNumber} totalSteps={TOTAL_ONBOARDING_STEPS} />
+      <ProgressBar progress={progress} />
 
       <div className="flex-1 flex flex-col justify-center relative z-10">
         <AnimatePresence mode="wait">
