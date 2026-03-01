@@ -1,12 +1,24 @@
-import React from "react";
+import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import ProgressBar from "@/components/ProgressBar";
 import ViblyButton from "@/components/ViblyButton";
 import { Lock } from "lucide-react";
+import { useDeviceAuth } from "@/hooks/useDeviceAuth";
 
 const FeatureLockScreen: React.FC = () => {
   const navigate = useNavigate();
+  const { ensureDeviceAccount } = useDeviceAuth();
+  const [signingIn, setSigningIn] = useState(false);
+
+  const handleContinue = async () => {
+    setSigningIn(true);
+    const ok = await ensureDeviceAccount();
+    setSigningIn(false);
+    if (ok) {
+      navigate("/name");
+    }
+  };
 
   return (
     <div className="min-h-[100dvh] flex flex-col px-5 pt-14 pb-8 mesh-bg noise-overlay vignette">
@@ -85,8 +97,8 @@ const FeatureLockScreen: React.FC = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.8 }}
       >
-        <ViblyButton onClick={() => navigate("/name")}>
-          Continue →
+        <ViblyButton onClick={handleContinue} disabled={signingIn}>
+          {signingIn ? "Setting up..." : "Continue →"}
         </ViblyButton>
       </motion.div>
     </div>

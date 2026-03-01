@@ -20,18 +20,21 @@ export default function EntryRoute() {
       return;
     }
     let cancelled = false;
-    supabase
-      .from("profiles")
-      .select("name")
-      .eq("id", user.id)
-      .maybeSingle()
-      .then(({ data: prof }) => {
+    (async () => {
+      try {
+        const { data: prof } = await supabase
+          .from("profiles")
+          .select("name")
+          .eq("id", user.id)
+          .maybeSingle();
         if (cancelled) return;
         setCheckDone(true);
         if (prof?.name) navigate("/home", { replace: true });
         else navigate("/name", { replace: true });
-      })
-      .catch(() => setCheckDone(true));
+      } catch {
+        if (!cancelled) setCheckDone(true);
+      }
+    })();
     return () => { cancelled = true; };
   }, [authLoading, user, navigate]);
 
