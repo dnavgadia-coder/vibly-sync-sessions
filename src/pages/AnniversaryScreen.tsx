@@ -7,14 +7,22 @@ import ViblyButton from "@/components/ViblyButton";
 const AnniversaryScreen: React.FC = () => {
   const navigate = useNavigate();
   const [date, setDate] = useState("");
+  const [saving, setSaving] = useState(false);
 
   const handleContinue = async () => {
-    if (!date) return;
-    const { data: { user } } = await supabase.auth.getUser();
-    if (user) {
-      await supabase.from("profiles").update({ start_date: date }).eq("id", user.id);
+    if (!date || saving) return;
+    setSaving(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        await supabase.from("profiles").update({ start_date: date }).eq("id", user.id);
+      }
+      navigate("/loading");
+    } catch {
+      navigate("/loading");
+    } finally {
+      setSaving(false);
     }
-    navigate("/loading");
   };
 
   return (
@@ -72,8 +80,8 @@ const AnniversaryScreen: React.FC = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.5 }}
       >
-        <ViblyButton onClick={handleContinue} disabled={!date}>
-          Continue →
+        <ViblyButton onClick={handleContinue} disabled={!date || saving}>
+          {saving ? "Saving..." : "Continue →"}
         </ViblyButton>
       </motion.div>
     </div>
