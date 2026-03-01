@@ -75,7 +75,7 @@ const PaywallScreen: React.FC = () => {
       </AnimatePresence>
 
       {/* Top illustration area */}
-      <div className="flex items-center justify-center pt-14 pb-6 relative">
+      <div className="flex items-center justify-center pt-20 pb-6 relative">
         <div className="relative">
           <motion.span
             className="text-5xl block"

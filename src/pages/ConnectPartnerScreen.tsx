@@ -171,7 +171,7 @@ const ConnectPartnerScreen: React.FC = () => {
   }
 
   return (
-    <div className="min-h-[100dvh] flex flex-col px-5 pt-14 pb-8 relative mesh-bg noise-overlay vignette">
+    <div className="min-h-[100dvh] flex flex-col px-5 pt-20 pb-8 relative mesh-bg noise-overlay vignette">
       <div className="flex-1 flex flex-col relative z-10">
         <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
           <h2 className="font-heading font-extrabold text-[28px] text-foreground mb-2">

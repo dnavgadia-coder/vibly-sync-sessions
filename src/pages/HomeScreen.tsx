@@ -92,10 +92,10 @@ const HomeScreen: React.FC = () => {
       <div className="flex items-center justify-between px-5 pt-14 pb-5 relative z-10">
         <h1 className="font-heading font-extrabold text-2xl text-foreground">Vibly</h1>
         <div className="flex items-center gap-2">
-          <span className="glass-card px-3 py-1.5 text-xs font-body font-semibold text-foreground">
+          <span className="glass-card px-3 py-1.5 text-sm font-body font-semibold text-foreground">
             🔥 {profile?.streak_count ?? 0}
           </span>
-          <span className="glass-card px-3 py-1.5 text-xs font-body font-semibold text-foreground">
+          <span className="glass-card px-3 py-1.5 text-sm font-body font-semibold text-foreground">
             💕 {daysCount}d
           </span>
         </div>
@@ -116,8 +116,8 @@ const HomeScreen: React.FC = () => {
                   <Bell className="w-5 h-5 text-primary" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="font-heading font-bold text-foreground text-sm">Get notified</p>
-                  <p className="text-xs font-body text-muted-foreground mt-0.5">
+                  <p className="font-heading font-bold text-foreground text-[15px]">Get notified</p>
+                  <p className="text-[13px] font-body text-muted-foreground mt-0.5">
                     When your partner answers, when you get close, and more.
                   </p>
                   <div className="flex gap-2 mt-3">
@@ -166,7 +166,7 @@ const HomeScreen: React.FC = () => {
               </div>
               <div className="flex-1">
                 <p className="font-heading font-bold text-foreground">Connect Premium to see distance</p>
-                <p className="text-xs font-body text-muted-foreground">See how far you and your partner are in real time</p>
+                <p className="text-[13px] font-body text-muted-foreground">See how far you and your partner are in real time</p>
               </div>
               <Sparkles className="w-5 h-5 text-primary" />
             </div>
@@ -203,7 +203,7 @@ const HomeScreen: React.FC = () => {
             animate={{ opacity: 1, y: 0 }}
           >
             <p className="font-heading font-bold text-foreground mb-2">You've used your free question for today</p>
-            <p className="text-sm font-body text-muted-foreground mb-5">Unlock unlimited daily questions and more with Premium.</p>
+            <p className="text-[15px] font-body text-muted-foreground mb-5">Unlock unlimited daily questions and more with Premium.</p>
             <button
               onClick={() => navigate("/paywall")}
               className="w-full py-4 rounded-[20px] text-white font-heading font-bold text-base bg-gradient-rose glow-rose-strong"
@@ -224,7 +224,7 @@ const HomeScreen: React.FC = () => {
           >
             <div className="absolute -top-px left-1/4 right-1/4 h-px bg-gradient-to-r from-transparent via-lavender/20 to-transparent" />
 
-            <p className="text-[10px] font-body font-semibold text-muted-foreground tracking-widest uppercase mb-3">
+            <p className="text-xs font-body font-semibold text-muted-foreground tracking-widest uppercase mb-3">
               TODAY'S QUESTION
             </p>
             <p className="text-[22px] font-heading font-bold text-foreground mb-5 leading-tight">
@@ -258,7 +258,7 @@ const HomeScreen: React.FC = () => {
             )}
 
             {myAnswer === null && (
-              <p className="text-[13px] font-body text-muted-foreground text-center mt-5">
+              <p className="text-[14px] font-body text-muted-foreground text-center mt-5">
                 {partnerAnswered ? `✅ ${partner?.name || "Partner"} already answered` : `🔒 ${partner?.name || "Partner"}'s answer is locked`}
               </p>
             )}
@@ -273,7 +273,7 @@ const HomeScreen: React.FC = () => {
           >
             <span className="text-4xl block mb-3">💬</span>
             <p className="font-heading font-bold text-foreground mb-1">No questions yet</p>
-            <p className="text-sm font-body text-muted-foreground">Questions will appear here daily</p>
+            <p className="text-[15px] font-body text-muted-foreground">Questions will appear here daily</p>
           </motion.div>
         )}
       </div>
