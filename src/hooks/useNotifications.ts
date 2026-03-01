@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "./useAuth";
 
@@ -15,98 +15,35 @@ export interface AppNotification {
   created_at: string;
 }
 
+/**
+ * Notifications hook — currently a stub because the `notifications` table
+ * has not been created yet.  All methods are no-ops that return safe defaults.
+ */
 export function useNotifications() {
   const { user } = useAuth();
-  const [notifications, setNotifications] = useState<AppNotification[]>([]);
-  const [unreadCount, setUnreadCount] = useState(0);
-  const [loading, setLoading] = useState(true);
+  const [notifications] = useState<AppNotification[]>([]);
+  const [unreadCount] = useState(0);
+  const [loading] = useState(false);
 
-  const fetchNotifications = useCallback(async () => {
-    if (!user) return;
-    const { data, error } = await supabase
-      .from("notifications")
-      .select("*")
-      .eq("user_id", user.id)
-      .order("created_at", { ascending: false })
-      .limit(50);
-    if (error) {
-      console.warn("[notifications] fetch error", error);
-      setLoading(false);
-      return;
-    }
-    const list = (data || []).map((row) => ({
-      ...row,
-      data: (row.data as Record<string, unknown>) || {},
-    })) as AppNotification[];
-    setNotifications(list);
-    setUnreadCount(list.filter((n) => !n.read_at).length);
-    setLoading(false);
-  }, [user]);
+  const markAsRead = useCallback(async (_id: string) => {}, []);
+  const markAllAsRead = useCallback(async () => {}, []);
+  const refetch = useCallback(async () => {}, []);
 
-  useEffect(() => {
-    fetchNotifications();
-  }, [fetchNotifications]);
-
-  useEffect(() => {
-    if (!user) return;
-    const channel = supabase
-      .channel(`notifications-${user.id}`)
-      .on(
-        "postgres_changes",
-        { event: "INSERT", schema: "public", table: "notifications", filter: `user_id=eq.${user.id}` },
-        () => fetchNotifications()
-      )
-      .on(
-        "postgres_changes",
-        { event: "UPDATE", schema: "public", table: "notifications", filter: `user_id=eq.${user.id}` },
-        () => fetchNotifications()
-      )
-      .subscribe();
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [user, fetchNotifications]);
-
-  const markAsRead = useCallback(
-    async (id: string) => {
-      if (!user) return;
-      await supabase.from("notifications").update({ read_at: new Date().toISOString() }).eq("id", id).eq("user_id", user.id);
-      setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, read_at: new Date().toISOString() } : n)));
-      setUnreadCount((c) => Math.max(0, c - 1));
-    },
-    [user]
-  );
-
-  const markAllAsRead = useCallback(async () => {
-    if (!user) return;
-    await supabase.from("notifications").update({ read_at: new Date().toISOString() }).eq("user_id", user.id).is("read_at", null);
-    setNotifications((prev) => prev.map((n) => ({ ...n, read_at: n.read_at || new Date().toISOString() })));
-    setUnreadCount(0);
-  }, [user]);
-
-  return { notifications, unreadCount, loading, markAsRead, markAllAsRead, refetch: fetchNotifications };
+  return { notifications, unreadCount, loading, markAsRead, markAllAsRead, refetch };
 }
 
-/** Create a notification for another user (e.g. partner). Call from client when the current user is the partner. */
+/** Stub — will work once a notifications table is created. */
 export async function createNotificationForUser(
   userId: string,
-  type: NotificationType,
+  _type: NotificationType,
   title: string,
   body?: string | null,
-  data?: Record<string, unknown>
+  _data?: Record<string, unknown>
 ): Promise<{ error: Error | null }> {
-  const { error } = await supabase.from("notifications").insert({
-    user_id: userId,
-    type,
-    title,
-    body: body ?? null,
-    data: data ?? {},
-  });
-  if (error) return { error: new Error(error.message) };
-
+  // Best-effort push via edge function even without a notifications table
   supabase.functions.invoke("send-push", {
     body: { user_id: userId, title, body: body ?? "" },
-  }).then(() => {}).catch(() => {});
+  }).catch(() => {});
 
   return { error: null };
 }
