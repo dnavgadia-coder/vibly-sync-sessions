@@ -172,20 +172,12 @@ const ConnectPartnerScreen: React.FC = () => {
 
   return (
     <div className="min-h-[100dvh] flex flex-col px-5 pt-14 pb-8 relative mesh-bg noise-overlay vignette">
-      {/* Not now */}
-      <button
-        onClick={() => isFromOnboarding ? navigate("/notification", { state: { from: "onboarding" } }) : navigate(-1)}
-        className="absolute top-12 right-5 z-10 text-[13px] font-body font-medium text-muted-foreground"
-      >
-        Not now
-      </button>
-
       <div className="flex-1 flex flex-col relative z-10">
         <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
           <h2 className="font-heading font-extrabold text-[28px] text-foreground mb-2">
             Connect with Your Partner
           </h2>
-          <p className="text-sm font-body text-muted-foreground">
+          <p className="text-[15px] font-body text-muted-foreground">
             All your details, including answers and journal entries will be shared with your partner.
           </p>
         </motion.div>
@@ -203,7 +195,7 @@ const ConnectPartnerScreen: React.FC = () => {
           <p className="font-heading font-extrabold text-[36px] text-center mt-3 tracking-[3px] text-primary">
             {myCode || "------"}
           </p>
-          <p className="text-xs font-body text-center mt-2 text-muted-foreground">
+          <p className="text-[13px] font-body text-center mt-2 text-muted-foreground">
             ⏱ {countdown || "Loading..."}
           </p>
           <button
@@ -249,6 +241,21 @@ const ConnectPartnerScreen: React.FC = () => {
           </button>
         </motion.div>
       </div>
+
+      {/* Not now — below connect content */}
+      <motion.div
+        className="relative z-10 mt-6 flex justify-center"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.4 }}
+      >
+        <button
+          onClick={() => isFromOnboarding ? navigate("/notification", { state: { from: "onboarding" } }) : navigate(-1)}
+          className="text-[15px] font-body font-medium text-muted-foreground hover:text-foreground/70 transition-colors"
+        >
+          Not now
+        </button>
+      </motion.div>
     </div>
   );
 };

@@ -5,7 +5,7 @@ import { X, Check } from "lucide-react";
 import { useInAppPurchase, type IAPPlanId } from "@/hooks/useInAppPurchase";
 
 const features = [
-  "Premium for you and your partner",
+  "Full premium access",
   "500+ couple questions & games",
   "Unlimited daily answers",
   "Live distance tracker",
@@ -103,11 +103,11 @@ const PaywallScreen: React.FC = () => {
 
       {/* Card area */}
       <div className="flex-1 px-6 pt-6 pb-8 flex flex-col relative z-10">
-        <h2 className="font-heading font-extrabold text-[24px] text-center text-foreground">
+        <h2 className="font-heading font-extrabold text-[26px] text-center text-foreground">
           Try Vibly Premium
         </h2>
-        <p className="text-sm font-body font-semibold text-center mt-1 text-primary">
-          Your partner doesn't pay anything
+        <p className="text-[15px] font-body font-semibold text-center mt-1 text-primary">
+          Unlock the full experience
         </p>
 
         {/* Feature list */}
@@ -123,7 +123,7 @@ const PaywallScreen: React.FC = () => {
               <div className="w-[22px] h-[22px] rounded-full flex items-center justify-center flex-shrink-0 bg-primary/10">
                 <Check className="w-3 h-3 text-primary" strokeWidth={3} />
               </div>
-              <span className="text-sm font-body font-medium text-foreground/80">
+              <span className="text-[15px] font-body font-medium text-foreground/80">
                 {f}
               </span>
             </motion.div>
@@ -141,12 +141,10 @@ const PaywallScreen: React.FC = () => {
           >
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs font-body font-bold text-primary">Monthly</p>
-                <p className="font-heading font-bold text-base text-foreground">
-                  $12.99 / month{" "}
-                  <span className="font-normal text-xs text-muted-foreground">for 2 users</span>
+                <p className="text-[13px] font-body font-bold text-primary">Monthly</p>
+                <p className="font-heading font-bold text-[17px] text-foreground">
+                  $12.99 / month
                 </p>
-                <p className="text-[11px] font-body text-muted-foreground">$6.50 / user / month</p>
               </div>
               {selectedPlan === "monthly" && (
                 <div className="w-5 h-5 rounded-full flex items-center justify-center bg-primary">
@@ -165,12 +163,11 @@ const PaywallScreen: React.FC = () => {
           >
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs font-body font-bold text-primary">Yearly</p>
-                <p className="font-heading font-bold text-base text-foreground">
-                  $39.99 / year{" "}
-                  <span className="font-normal text-xs text-muted-foreground">for 2 users</span>
+                <p className="text-[13px] font-body font-bold text-primary">Yearly</p>
+                <p className="font-heading font-bold text-[17px] text-foreground">
+                  $39.99 / year
                 </p>
-                <p className="text-[11px] font-body text-muted-foreground">$1.67 / user / month</p>
+                <p className="text-[13px] font-body text-muted-foreground">$3.33 / month</p>
               </div>
               {selectedPlan === "yearly" && (
                 <div className="w-5 h-5 rounded-full flex items-center justify-center bg-primary">
@@ -182,8 +179,8 @@ const PaywallScreen: React.FC = () => {
 
           {/* SAVE badge */}
           <div className="flex justify-end -mt-1">
-            <span className="text-[9px] font-body font-extrabold rounded-full px-2.5 py-1 text-primary-foreground bg-primary">
-              SAVE 75%
+            <span className="text-[10px] font-body font-extrabold rounded-full px-2.5 py-1 text-primary-foreground bg-primary">
+              SAVE 74%
             </span>
           </div>
         </div>
@@ -213,7 +210,7 @@ const PaywallScreen: React.FC = () => {
             type="button"
             onClick={handleRestore}
             disabled={loading}
-            className="text-[10px] font-body text-primary mt-2 underline disabled:opacity-60"
+            className="text-[11px] font-body text-primary mt-2 underline disabled:opacity-60"
           >
             Restore purchases
           </button>
@@ -223,7 +220,7 @@ const PaywallScreen: React.FC = () => {
           <button
             type="button"
             onClick={goForward}
-            className="text-xs font-body text-muted-foreground mt-3 underline"
+            className="text-[13px] font-body text-muted-foreground mt-3 underline"
           >
             Continue without subscribing
           </button>
@@ -287,12 +284,12 @@ const PaywallScreen: React.FC = () => {
                   81% OFF
                 </p>
 
-                <p className="text-sm font-body max-w-[300px] mt-2 leading-relaxed text-muted-foreground">
-                  Unlock all premium benefits only today at a special price just for you and your partner.
+                <p className="text-[15px] font-body max-w-[300px] mt-2 leading-relaxed text-muted-foreground">
+                  Unlock all premium benefits only today at a special price just for you.
                 </p>
 
-                <p className="text-base font-body font-semibold mt-3 text-foreground">
-                  $29.99 / year for 2 users
+                <p className="text-[17px] font-body font-semibold mt-3 text-foreground">
+                  $29.99 / year
                 </p>
 
                 <button
