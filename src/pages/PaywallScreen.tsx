@@ -136,7 +136,7 @@ const PaywallScreen: React.FC = () => {
           <button
             onClick={() => setSelectedPlan("monthly")}
             className={`relative rounded-[16px] p-4 text-left transition-all duration-200 glass-card ${
-              selectedPlan === "monthly" ? "border-primary/40 border-2" : "border border-border"
+              selectedPlan === "monthly" ? "border-2 border-primary glow-rose" : "border border-border"
             }`}
           >
             <div className="flex items-center justify-between">
@@ -158,7 +158,7 @@ const PaywallScreen: React.FC = () => {
           <button
             onClick={() => setSelectedPlan("yearly")}
             className={`relative rounded-[16px] p-4 text-left transition-all duration-200 glass-card ${
-              selectedPlan === "yearly" ? "border-primary/40 border-2" : "border border-border"
+              selectedPlan === "yearly" ? "border-2 border-primary glow-rose" : "border border-border"
             }`}
           >
             <div className="flex items-center justify-between">
@@ -200,9 +200,7 @@ const PaywallScreen: React.FC = () => {
             ? "Processing…"
             : isAvailable && !isReady
               ? "Loading store…"
-              : !isAvailable
-                ? "Open the app to subscribe"
-                : "Continue"}
+              : "Subscribe now"}
         </button>
 
         {isAvailable && (
