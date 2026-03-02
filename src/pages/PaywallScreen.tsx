@@ -248,7 +248,7 @@ const PaywallScreen: React.FC = () => {
               exit={{ y: "100%" }}
               transition={{ type: "spring", bounce: 0.2 }}
             >
-              <button onClick={handleDismissDiscount} className="absolute top-4 right-5">
+              <button onClick={(e) => { e.stopPropagation(); handleDismissDiscount(); }} className="absolute top-4 right-5">
                 <X className="w-5 h-5 text-muted-foreground" />
               </button>
 
