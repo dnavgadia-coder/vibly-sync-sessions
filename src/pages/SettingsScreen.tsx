@@ -63,7 +63,7 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ onPartnerUnlinked }) =>
             <div className="flex-1">
               <p className="font-heading font-bold text-lg text-foreground">{profile?.name || "You"}</p>
               <p className="text-xs font-body text-muted-foreground">
-                Member for {daysCount} day{daysCount !== 1 ? "s" : ""}
+                Together for {daysCount} day{daysCount !== 1 ? "s" : ""}
               </p>
             </div>
           </div>
