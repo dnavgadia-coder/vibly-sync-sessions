@@ -19,7 +19,7 @@ const ResultsScreen: React.FC = () => {
   const partnerName = profile?.partner_name || "Partner";
 
   return (
-    <div className="min-h-[100dvh] flex flex-col px-5 pt-14 pb-8 mesh-bg noise-overlay vignette">
+    <div className="min-h-[100dvh] flex flex-col px-5 pt-20 pb-8 mesh-bg noise-overlay vignette">
       <div className="flex-1 flex flex-col justify-center relative z-10">
         <motion.h2
           className="font-heading font-bold text-[26px] text-foreground text-center mb-8"

@@ -50,7 +50,7 @@ const WeeklyReportScreen: React.FC = () => {
   }
 
   return (
-    <div className="min-h-[100dvh] flex flex-col items-center px-5 pt-14 pb-8 mesh-bg noise-overlay vignette">
+    <div className="min-h-[100dvh] flex flex-col items-center px-5 pt-20 pb-8 mesh-bg noise-overlay vignette">
       <div className="flex-1 flex flex-col items-center justify-center w-full relative z-10">
         <motion.div
           className="w-full glass-card-elevated p-7 relative overflow-hidden light-sweep"

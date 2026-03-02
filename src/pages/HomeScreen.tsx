@@ -89,7 +89,7 @@ const HomeScreen: React.FC = () => {
   return (
     <div className="min-h-[100dvh] flex flex-col mesh-bg noise-overlay vignette pb-24">
       {/* Header */}
-      <div className="flex items-center justify-between px-5 pt-14 pb-5 relative z-10">
+      <div className="flex items-center justify-between px-5 pt-20 pb-5 relative z-10">
         <h1 className="font-heading font-extrabold text-2xl text-foreground">Vibly</h1>
         <div className="flex items-center gap-2">
           <span className="glass-card px-3 py-1.5 text-sm font-body font-semibold text-foreground">
