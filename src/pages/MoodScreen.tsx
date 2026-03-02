@@ -65,7 +65,7 @@ const MoodScreen: React.FC = () => {
   };
 
   return (
-    <div className="min-h-[100dvh] flex flex-col mesh-bg noise-overlay vignette pb-24">
+    <div className="min-h-[100dvh] flex flex-col mesh-bg noise-overlay vignette pb-28">
       <div className="flex items-center justify-between px-5 pt-20 pb-5 relative z-10">
         <h1 className="font-heading font-extrabold text-2xl text-foreground">Mood</h1>
       </div>
@@ -73,7 +73,7 @@ const MoodScreen: React.FC = () => {
       <div className="px-5 flex flex-col gap-6 relative z-10">
         {/* My mood */}
         <motion.div
-          className="glass-card-elevated p-6"
+          className="glass-card-futuristic gradient-border p-6"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
         >
@@ -128,7 +128,7 @@ const MoodScreen: React.FC = () => {
 
         {/* Partner mood */}
         <motion.div
-          className="glass-card-elevated p-6"
+          className="glass-card-futuristic gradient-border p-6"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.15 }}
