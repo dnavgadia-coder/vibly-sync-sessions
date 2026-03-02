@@ -26,7 +26,7 @@ const AnniversaryScreen: React.FC = () => {
   };
 
   return (
-    <div className="min-h-[100dvh] w-full max-w-full flex flex-col px-6 pt-14 pb-8 mesh-bg noise-overlay vignette overflow-x-hidden box-border">
+    <div className="min-h-[100dvh] w-full max-w-full flex flex-col px-6 pt-20 pb-8 mesh-bg noise-overlay vignette overflow-x-hidden box-border">
       <div className="flex-1 flex flex-col justify-center relative z-10 min-w-0 w-full box-border">
         <div className="w-full min-w-0 flex flex-col items-stretch box-border overflow-hidden px-1">
           <motion.div

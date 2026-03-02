@@ -53,7 +53,7 @@ const NotificationScreen: React.FC = () => {
   };
 
   return (
-    <div className="min-h-[100dvh] flex flex-col px-5 pt-14 pb-8 mesh-bg noise-overlay vignette">
+    <div className="min-h-[100dvh] flex flex-col px-5 pt-20 pb-8 mesh-bg noise-overlay vignette">
       <div className="flex-1 flex flex-col relative z-10">
         <h1 className="font-heading font-extrabold text-2xl text-foreground mb-1">Notifications</h1>
         <p className="text-sm font-body text-muted-foreground mb-6">

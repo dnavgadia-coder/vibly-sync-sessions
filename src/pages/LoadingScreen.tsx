@@ -40,7 +40,7 @@ const LoadingScreen: React.FC = () => {
   }, []);
 
   return (
-    <div className="min-h-[100dvh] flex flex-col px-5 pt-14 pb-8 mesh-bg noise-overlay vignette">
+    <div className="min-h-[100dvh] flex flex-col px-5 pt-20 pb-8 mesh-bg noise-overlay vignette">
       <ProgressBar progress={70} step={10} totalSteps={12} />
 
       <div className="flex-1 flex flex-col items-center justify-center relative z-10">

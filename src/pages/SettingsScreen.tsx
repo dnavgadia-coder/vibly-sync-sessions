@@ -22,7 +22,7 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ onPartnerUnlinked }) =>
   const handleLogout = async () => {
     setLoggingOut(true);
     await supabase.auth.signOut();
-    navigate("/auth");
+    navigate("/");
   };
 
   const copyInviteCode = () => {
@@ -45,7 +45,7 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ onPartnerUnlinked }) =>
 
   return (
     <div className="min-h-[100dvh] flex flex-col mesh-bg noise-overlay vignette pb-24">
-      <div className="flex items-center justify-between px-5 pt-14 pb-5 relative z-10">
+      <div className="flex items-center justify-between px-5 pt-20 pb-5 relative z-10">
         <h1 className="font-heading font-extrabold text-2xl text-foreground">Settings</h1>
       </div>
 
