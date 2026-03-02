@@ -279,7 +279,7 @@ const PaywallScreen: React.FC = () => {
                 </p>
 
                 <p className="font-heading font-black text-[48px] mt-1 text-gradient-rose-lavender">
-                  81% OFF
+                  25% OFF
                 </p>
 
                 <p className="text-[15px] font-body max-w-[300px] mt-2 leading-relaxed text-muted-foreground">
