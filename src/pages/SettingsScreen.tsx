@@ -44,7 +44,7 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ onPartnerUnlinked }) =>
   };
 
   return (
-    <div className="min-h-[100dvh] flex flex-col mesh-bg noise-overlay vignette pb-24">
+    <div className="min-h-[100dvh] flex flex-col mesh-bg noise-overlay vignette pb-28">
       <div className="flex items-center justify-between px-5 pt-20 pb-5 relative z-10">
         <h1 className="font-heading font-extrabold text-2xl text-foreground">Settings</h1>
       </div>
@@ -52,7 +52,7 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ onPartnerUnlinked }) =>
       <div className="px-5 flex flex-col gap-4 relative z-10">
         {/* Profile Card */}
         <motion.div
-          className="glass-card-elevated p-6"
+          className="glass-card-futuristic gradient-border p-6"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
         >
@@ -71,7 +71,7 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ onPartnerUnlinked }) =>
 
         {/* Partner Status */}
         <motion.div
-          className="glass-card-elevated p-6"
+          className="glass-card-futuristic gradient-border p-6"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.05 }}
@@ -150,7 +150,7 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ onPartnerUnlinked }) =>
         {/* Subscription / Upgrade — hide when user has IAP premium or profile subscription */}
         {!isPremiumUser && (
           <motion.div
-            className="glass-card-elevated overflow-hidden"
+          className="glass-card-futuristic gradient-border overflow-hidden"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
@@ -173,7 +173,7 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ onPartnerUnlinked }) =>
 
         {/* Quick Actions */}
         <motion.div
-          className="glass-card-elevated overflow-hidden"
+          className="glass-card-futuristic gradient-border overflow-hidden"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.15 }}

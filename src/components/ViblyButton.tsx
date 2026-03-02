@@ -22,13 +22,22 @@ const ViblyButton: React.FC<ViblyButtonProps> = ({ children, variant = "rose", o
           ? "bg-gradient-rose text-primary-foreground glow-rose-strong"
           : "bg-gradient-mint text-accent-foreground glow-mint-strong"
         }
+        ${disabled ? "opacity-50" : ""}
         ${className}
       `}
     >
       {/* Top shine */}
-      <span className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent pointer-events-none" />
+      <span className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/25 to-transparent pointer-events-none" />
+      {/* Bottom shadow edge */}
+      <span className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-black/20 to-transparent pointer-events-none" />
       {/* Subtle shine layer */}
-      <span className="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent pointer-events-none" />
+      <span className="absolute inset-0 bg-gradient-to-b from-white/12 to-transparent pointer-events-none" />
+      {/* Animated light sweep */}
+      <motion.span
+        className="absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.06] to-transparent pointer-events-none"
+        animate={{ x: ["-100%", "200%"] }}
+        transition={{ duration: 3, repeat: Infinity, repeatDelay: 2 }}
+      />
       <span className="relative z-[1]">{children}</span>
     </motion.button>
   );

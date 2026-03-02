@@ -87,17 +87,23 @@ const HomeScreen: React.FC = () => {
   }
 
   return (
-    <div className="min-h-[100dvh] flex flex-col mesh-bg noise-overlay vignette pb-24">
+    <div className="min-h-[100dvh] flex flex-col mesh-bg noise-overlay vignette pb-28">
       {/* Header */}
       <div className="flex items-center justify-between px-5 pt-20 pb-5 relative z-10">
-        <h1 className="font-heading font-extrabold text-2xl text-foreground">Vibly</h1>
+        <h1 className="font-heading font-extrabold text-2xl text-gradient-rose-lavender text-glow-gradient">Vibly</h1>
         <div className="flex items-center gap-2">
-          <span className="glass-card px-3 py-1.5 text-sm font-body font-semibold text-foreground">
+          <motion.span
+            className="glass-card-futuristic gradient-border px-3.5 py-1.5 text-sm font-body font-semibold text-foreground flex items-center gap-1"
+            whileHover={{ scale: 1.05 }}
+          >
             🔥 {profile?.streak_count ?? 0}
-          </span>
-          <span className="glass-card px-3 py-1.5 text-sm font-body font-semibold text-foreground">
+          </motion.span>
+          <motion.span
+            className="glass-card-futuristic gradient-border px-3.5 py-1.5 text-sm font-body font-semibold text-foreground flex items-center gap-1"
+            whileHover={{ scale: 1.05 }}
+          >
             💕 {daysCount}d
-          </span>
+          </motion.span>
         </div>
       </div>
 
@@ -109,7 +115,7 @@ const HomeScreen: React.FC = () => {
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
-              className="glass-card-elevated p-4 rounded-2xl"
+              className="glass-card-futuristic gradient-border p-4 rounded-2xl"
             >
               <div className="flex items-start gap-3">
                 <div className="w-10 h-10 rounded-xl bg-primary/15 flex items-center justify-center shrink-0">
@@ -155,7 +161,7 @@ const HomeScreen: React.FC = () => {
         {profile?.partner_id && !isPremiumUser && (
           <motion.button
             onClick={() => navigate("/paywall")}
-            className="glass-card-elevated p-5 text-left"
+            className="glass-card-futuristic gradient-border p-5 text-left"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             whileTap={{ scale: 0.98 }}
@@ -177,12 +183,18 @@ const HomeScreen: React.FC = () => {
         {!profile?.partner_id && !profileLoading && (
           <motion.button
             onClick={() => navigate("/connect")}
-            className="glass-card-elevated p-5 text-left"
+            className="glass-card-futuristic gradient-border p-5 text-left relative overflow-hidden"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             whileTap={{ scale: 0.98 }}
           >
-            <div className="flex items-center gap-3">
+            {/* Subtle animated shine */}
+            <motion.div
+              className="absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.03] to-transparent"
+              animate={{ x: ["-100%", "200%"] }}
+              transition={{ duration: 3, repeat: Infinity, repeatDelay: 2 }}
+            />
+            <div className="flex items-center gap-3 relative z-[1]">
               <div className="w-11 h-11 rounded-full bg-amber/12 flex items-center justify-center glow-amber">
                 <span className="text-lg">💌</span>
               </div>
@@ -190,7 +202,13 @@ const HomeScreen: React.FC = () => {
                 <p className="font-heading font-bold text-[15px] text-foreground">Connect with your partner</p>
                 <p className="text-[13px] font-body text-muted-foreground">Share your invite code to get started</p>
               </div>
-              <span className="text-lg text-muted-foreground">→</span>
+              <motion.span
+                className="text-lg text-primary"
+                animate={{ x: [0, 4, 0] }}
+                transition={{ duration: 1.5, repeat: Infinity }}
+              >
+                →
+              </motion.span>
             </div>
           </motion.button>
         )}
@@ -198,7 +216,7 @@ const HomeScreen: React.FC = () => {
         {/* Daily Question: free = 1 per day, then paywall */}
         {!isPremiumUser && myAnswer !== null && (
           <motion.div
-            className="glass-card-elevated p-6 text-center"
+            className="glass-card-futuristic gradient-border p-6 text-center"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
           >
@@ -214,17 +232,15 @@ const HomeScreen: React.FC = () => {
         )}
         {question && (isPremiumUser || myAnswer === null) && (
           <motion.div
-            className="glass-card-elevated p-6 relative overflow-hidden"
-            style={{
-              background: "linear-gradient(135deg, hsla(240,29%,10%,0.6) 0%, hsla(263,86%,76%,0.06) 100%)",
-            }}
+            className="glass-card-futuristic gradient-border p-6 relative overflow-hidden"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
           >
-            <div className="absolute -top-px left-1/4 right-1/4 h-px bg-gradient-to-r from-transparent via-lavender/20 to-transparent" />
+            {/* Top edge accent */}
+            <div className="absolute -top-px left-[10%] right-[10%] h-[2px] bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
 
-            <p className="text-xs font-body font-semibold text-muted-foreground tracking-widest uppercase mb-3">
+            <p className="text-xs font-body font-semibold text-primary/70 tracking-widest uppercase mb-3">
               TODAY'S QUESTION
             </p>
             <p className="text-[22px] font-heading font-bold text-foreground mb-5 leading-tight">
@@ -267,11 +283,17 @@ const HomeScreen: React.FC = () => {
 
         {!question && !profileLoading && (
           <motion.div
-            className="glass-card-elevated p-6 text-center"
+            className="glass-card-futuristic gradient-border p-8 text-center"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
           >
-            <span className="text-4xl block mb-3">💬</span>
+            <motion.span
+              className="text-4xl block mb-3"
+              animate={{ y: [0, -4, 0] }}
+              transition={{ duration: 2, repeat: Infinity }}
+            >
+              💬
+            </motion.span>
             <p className="font-heading font-bold text-foreground mb-1">No questions yet</p>
             <p className="text-[15px] font-body text-muted-foreground">Questions will appear here daily</p>
           </motion.div>
@@ -295,19 +317,21 @@ function BottomTabBar({
   isPremium: boolean;
 }) {
   const tabs: { id: TabId; label: string; icon: React.ReactNode }[] = [
-    { id: "today", label: "Today", icon: <MessageCircle className="w-5 h-5" strokeWidth={2} /> },
-    { id: "mood", label: "Mood", icon: <Smile className="w-5 h-5" strokeWidth={2} /> },
-    { id: "weekly", label: "Weekly", icon: <BarChart3 className="w-5 h-5" strokeWidth={2} /> },
-    { id: "settings", label: "Settings", icon: <Settings className="w-5 h-5" strokeWidth={2} /> },
+    { id: "today", label: "Today", icon: <MessageCircle className="w-[18px] h-[18px]" strokeWidth={2} /> },
+    { id: "mood", label: "Mood", icon: <Smile className="w-[18px] h-[18px]" strokeWidth={2} /> },
+    { id: "weekly", label: "Weekly", icon: <BarChart3 className="w-[18px] h-[18px]" strokeWidth={2} /> },
+    { id: "settings", label: "Settings", icon: <Settings className="w-[18px] h-[18px]" strokeWidth={2} /> },
   ];
 
   return (
     <div className="fixed bottom-6 left-1/2 -translate-x-1/2 w-[calc(100%-40px)] max-w-[390px] z-50">
-      <div className="glass-card-elevated p-1.5 flex items-center justify-around !rounded-[22px]">
+      <div className="glass-card-futuristic p-1.5 flex items-center justify-around !rounded-[22px] relative overflow-hidden">
+        {/* Subtle top edge shine */}
+        <div className="absolute -top-px left-[15%] right-[15%] h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
         {tabs.map((tab) => {
           const isActive = activeTab === tab.id;
           return (
-            <button
+            <motion.button
               key={tab.id}
               onClick={() => {
                 if (tab.id === "weekly") {
@@ -317,15 +341,23 @@ function BottomTabBar({
                   setActiveTab(tab.id);
                 }
               }}
-              className={`flex items-center gap-1.5 px-4 py-2.5 rounded-[18px] text-sm font-body font-medium transition-all duration-200 ${
+              className={`flex flex-col items-center gap-0.5 px-4 py-2 rounded-[16px] text-[10px] font-body font-semibold transition-all duration-200 relative ${
                 isActive
-                  ? "bg-primary/15 text-primary shadow-sm"
+                  ? "text-primary"
                   : "text-muted-foreground hover:text-foreground"
               }`}
+              whileTap={{ scale: 0.9 }}
             >
-              {tab.icon}
-              <span className="hidden sm:inline">{tab.label}</span>
-            </button>
+              {isActive && (
+                <motion.div
+                  layoutId="tab-active"
+                  className="absolute inset-0 bg-primary/10 rounded-[16px]"
+                  transition={{ type: "spring", bounce: 0.2, duration: 0.4 }}
+                />
+              )}
+              <span className="relative z-[1]">{tab.icon}</span>
+              <span className="relative z-[1]">{tab.label}</span>
+            </motion.button>
           );
         })}
       </div>
