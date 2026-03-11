@@ -388,7 +388,7 @@ const HomeScreen: React.FC = () => {
         )}
       </div>
 
-      <BottomTabBar activeTab={activeTab} setActiveTab={setActiveTab} navigate={navigate} isPremium={isPremiumUser} />
+      <BottomTabBar activeTab={activeTab} setActiveTab={setActiveTab} navigate={navigate} isPremium={isPremiumUser} refetchProfile={refetchProfile} refetchQuestion={refetchQuestion} />
     </div>
   );
 };
