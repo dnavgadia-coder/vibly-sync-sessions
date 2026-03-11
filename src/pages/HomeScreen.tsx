@@ -105,7 +105,7 @@ const HomeScreen: React.FC = () => {
     return (
       <div className="relative">
         <MoodScreen />
-        <BottomTabBar activeTab={activeTab} setActiveTab={setActiveTab} navigate={navigate} isPremium={isPremiumUser} />
+        <BottomTabBar activeTab={activeTab} setActiveTab={setActiveTab} navigate={navigate} isPremium={isPremiumUser} refetchProfile={refetchProfile} refetchQuestion={refetchQuestion} />
       </div>
     );
   }
@@ -114,7 +114,7 @@ const HomeScreen: React.FC = () => {
     return (
       <div className="relative">
         <SettingsScreen onPartnerUnlinked={refetchProfile} />
-        <BottomTabBar activeTab={activeTab} setActiveTab={setActiveTab} navigate={navigate} isPremium={isPremiumUser} />
+        <BottomTabBar activeTab={activeTab} setActiveTab={setActiveTab} navigate={navigate} isPremium={isPremiumUser} refetchProfile={refetchProfile} refetchQuestion={refetchQuestion} />
       </div>
     );
   }
@@ -388,7 +388,7 @@ const HomeScreen: React.FC = () => {
         )}
       </div>
 
-      <BottomTabBar activeTab={activeTab} setActiveTab={setActiveTab} navigate={navigate} isPremium={isPremiumUser} />
+      <BottomTabBar activeTab={activeTab} setActiveTab={setActiveTab} navigate={navigate} isPremium={isPremiumUser} refetchProfile={refetchProfile} refetchQuestion={refetchQuestion} />
     </div>
   );
 };
@@ -398,11 +398,15 @@ function BottomTabBar({
   setActiveTab,
   navigate,
   isPremium,
+  refetchProfile,
+  refetchQuestion,
 }: {
   activeTab: TabId;
   setActiveTab: (tab: TabId) => void;
   navigate: (path: string) => void;
   isPremium: boolean;
+  refetchProfile: () => void;
+  refetchQuestion: () => void;
 }) {
   const tabs: { id: TabId; label: string; icon: React.ReactNode }[] = [
     { id: "today", label: "Today", icon: <MessageCircle className="w-[18px] h-[18px]" strokeWidth={2} /> },
@@ -427,6 +431,9 @@ function BottomTabBar({
                   else navigate("/weekly");
                 } else {
                   setActiveTab(tab.id);
+                  // Refresh data when switching tabs
+                  refetchProfile();
+                  if (tab.id === "today") refetchQuestion();
                 }
               }}
               className={`flex flex-col items-center gap-0.5 px-4 py-2 rounded-[16px] text-[10px] font-body font-semibold transition-all duration-200 relative ${
