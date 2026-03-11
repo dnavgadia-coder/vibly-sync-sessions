@@ -43,6 +43,13 @@ export function useProfile() {
     if (!prof) { setLoading(false); return; }
     setProfile(prof as Profile);
 
+    // Clear partner & distance if no longer linked
+    if (!prof.partner_id) {
+      setPartner(null);
+      setDistance(null);
+    }
+    setProfile(prof as Profile);
+
     // Calculate days together
     if (prof.start_date) {
       const start = new Date(prof.start_date);
