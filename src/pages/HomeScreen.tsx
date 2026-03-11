@@ -121,6 +121,61 @@ const HomeScreen: React.FC = () => {
 
   return (
     <div className="min-h-[100dvh] flex flex-col mesh-bg noise-overlay vignette pb-28">
+      {/* Partner Connected Celebration Popup */}
+      <AnimatePresence>
+        {showPartnerConnected && (
+          <motion.div
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-background/60 backdrop-blur-md"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <motion.div
+              className="glass-card-futuristic gradient-border p-8 mx-6 max-w-sm w-full text-center relative overflow-hidden"
+              initial={{ scale: 0.7, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.8, opacity: 0 }}
+              transition={{ type: "spring", bounce: 0.4 }}
+            >
+              <div className="absolute inset-0 pointer-events-none overflow-hidden">
+                {[...Array(12)].map((_, i) => (
+                  <motion.span
+                    key={i}
+                    className="absolute text-xl"
+                    style={{ left: `${10 + Math.random() * 80}%`, top: `${10 + Math.random() * 80}%` }}
+                    initial={{ opacity: 0, scale: 0 }}
+                    animate={{ opacity: [0, 1, 0], scale: [0, 1.2, 0], y: [0, -40] }}
+                    transition={{ duration: 2, delay: Math.random() * 0.5, repeat: Infinity }}
+                  >
+                    {["💕", "✨", "🎉", "💖"][i % 4]}
+                  </motion.span>
+                ))}
+              </div>
+              <div className="relative z-10">
+                <motion.span
+                  className="text-6xl block mb-4"
+                  animate={{ scale: [1, 1.2, 1] }}
+                  transition={{ duration: 1.5, repeat: Infinity }}
+                >
+                  💑
+                </motion.span>
+                <h3 className="font-heading font-bold text-xl text-foreground mb-2">
+                  {connectedPartnerName} connected with you!
+                </h3>
+                <p className="text-sm font-body text-muted-foreground mb-6">
+                  You're now linked in Vibly. Start answering questions together! 💕
+                </p>
+                <button
+                  onClick={() => setShowPartnerConnected(false)}
+                  className="w-full py-3.5 rounded-[20px] text-white font-heading font-bold text-base bg-gradient-rose glow-rose-strong"
+                >
+                  Let's go! ✨
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
       {/* Header */}
       <div className="flex items-center justify-between px-5 pt-20 pb-5 relative z-10">
         <h1 className="font-heading font-extrabold text-2xl text-gradient-rose-lavender text-glow-gradient">Vibly</h1>
