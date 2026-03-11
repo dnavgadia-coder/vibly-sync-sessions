@@ -54,6 +54,7 @@ const HomeScreen: React.FC = () => {
         { event: "UPDATE", schema: "public", table: "profiles", filter: `id=eq.${profile.id}` },
         (payload) => {
           const newPartnerId = (payload.new as any).partner_id;
+          // Partner connected
           if (prevPartnerId.current === null && newPartnerId) {
             refetchProfile();
             refetchQuestion();
@@ -62,6 +63,14 @@ const HomeScreen: React.FC = () => {
               setShowPartnerConnected(true);
               setTimeout(() => setShowPartnerConnected(false), 5000);
             });
+          }
+          // Partner unlinked — auto-logout
+          if (prevPartnerId.current && !newPartnerId) {
+            toast.info("Your partner unlinked. Logging out...");
+            setTimeout(async () => {
+              await supabase.auth.signOut();
+              navigate("/");
+            }, 1500);
           }
           prevPartnerId.current = newPartnerId;
         }
