@@ -132,5 +132,15 @@ export function useDailyQuestion() {
     setSubmitting(false);
   };
 
-  return { question, myAnswer, partnerAnswered, partnerAnswer, loading, submitting, submitAnswer };
+  const refetch = () => {
+    if (!user) return;
+    setLoading(true);
+    setMyAnswer(null);
+    setPartnerAnswered(false);
+    setPartnerAnswer(null);
+    // Re-trigger the effect by toggling a counter
+    setRefetchCount((c) => c + 1);
+  };
+
+  return { question, myAnswer, partnerAnswered, partnerAnswer, loading, submitting, submitAnswer, refetch };
 }
