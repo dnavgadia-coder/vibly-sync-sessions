@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 import { useProfile } from "@/hooks/useProfile";
 import { useDailyQuestion } from "@/hooks/useDailyQuestion";
 import { useLocationTracking } from "@/hooks/useLocationTracking";
@@ -21,13 +22,16 @@ const HomeScreen: React.FC = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<TabId>("today");
   const { profile, partner, distance, daysCount, loading: profileLoading, refetch: refetchProfile } = useProfile();
-  const { question, myAnswer, partnerAnswered, partnerAnswer, submitting, submitAnswer } = useDailyQuestion();
+  const { question, myAnswer, partnerAnswered, partnerAnswer, submitting, submitAnswer, refetch: refetchQuestion } = useDailyQuestion();
   const { isPremium } = useInAppPurchase();
   const { isNative, registerAndSaveToken } = usePushRegistration();
   useLocationTracking();
 
   const [showPushPrompt, setShowPushPrompt] = useState(false);
   const [pushPromptLoading, setPushPromptLoading] = useState(false);
+  const [showPartnerConnected, setShowPartnerConnected] = useState(false);
+  const [connectedPartnerName, setConnectedPartnerName] = useState("");
+  const prevPartnerId = useRef<string | null | undefined>(undefined);
 
   useEffect(() => {
     if (!isNative) return;
