@@ -114,7 +114,7 @@ const HomeScreen: React.FC = () => {
     return (
       <div className="relative">
         <SettingsScreen onPartnerUnlinked={refetchProfile} />
-        <BottomTabBar activeTab={activeTab} setActiveTab={setActiveTab} navigate={navigate} isPremium={isPremiumUser} />
+        <BottomTabBar activeTab={activeTab} setActiveTab={setActiveTab} navigate={navigate} isPremium={isPremiumUser} refetchProfile={refetchProfile} refetchQuestion={refetchQuestion} />
       </div>
     );
   }
