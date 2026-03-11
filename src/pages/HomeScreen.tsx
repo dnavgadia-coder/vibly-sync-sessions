@@ -44,6 +44,35 @@ const HomeScreen: React.FC = () => {
     void check();
   }, [isNative]);
 
+  // Realtime: detect when partner connects (partner_id changes from null to a value)
+  useEffect(() => {
+    if (!profile?.id) return;
+    const channel = supabase
+      .channel(`home-profile-${profile.id}`)
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "profiles", filter: `id=eq.${profile.id}` },
+        (payload) => {
+          const newPartnerId = (payload.new as any).partner_id;
+          if (prevPartnerId.current === null && newPartnerId) {
+            refetchProfile();
+            refetchQuestion();
+            supabase.from("profiles").select("name").eq("id", newPartnerId).maybeSingle().then(({ data }) => {
+              setConnectedPartnerName(data?.name || "Your partner");
+              setShowPartnerConnected(true);
+              setTimeout(() => setShowPartnerConnected(false), 5000);
+            });
+          }
+          prevPartnerId.current = newPartnerId;
+        }
+      )
+      .subscribe();
+    if (prevPartnerId.current === undefined) {
+      prevPartnerId.current = profile.partner_id ?? null;
+    }
+    return () => { supabase.removeChannel(channel); };
+  }, [profile?.id, profile?.partner_id]);
+
   const handlePushEnable = async () => {
     setPushPromptLoading(true);
     const result = await registerAndSaveToken();
