@@ -21,6 +21,7 @@ export function useDailyQuestion() {
   const [partnerAnswer, setPartnerAnswer] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [refetchCount, setRefetchCount] = useState(0);
 
   useEffect(() => {
     if (!user) return;
