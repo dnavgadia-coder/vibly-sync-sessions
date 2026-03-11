@@ -96,7 +96,7 @@ const QuizScreen: React.FC = () => {
   const [currentQ, setCurrentQ] = useState(0);
   const [selected, setSelected] = useState<number | null>(null);
 
-  const stepNumber = currentQ + 2; // quiz starts at step 2
+  const stepNumber = currentQ + 2;
   const progress = Math.round((stepNumber / TOTAL_ONBOARDING_STEPS) * 100);
   const q = quizQuestions[currentQ];
   if (!q) return null;
@@ -124,14 +124,13 @@ const QuizScreen: React.FC = () => {
 
   return (
     <div className="min-h-[100dvh] flex flex-col px-5 pt-20 pb-8 mesh-bg noise-overlay vignette">
-      <div className="flex items-center justify-between mb-4 relative z-10">
+      <div className="flex items-center mb-4 relative z-10">
         <button onClick={handleBack} className="w-8 h-8 flex items-center justify-center rounded-full bg-white/10">
           <ChevronLeft className="w-5 h-5 text-foreground" />
         </button>
-        <span className="text-[13px] font-body text-foreground/70">Step {stepNumber} of {TOTAL_ONBOARDING_STEPS}</span>
       </div>
 
-      <ProgressBar progress={progress} />
+      <ProgressBar progress={progress} step={stepNumber} totalSteps={TOTAL_ONBOARDING_STEPS} />
 
       <div className="flex-1 flex flex-col justify-center relative z-10">
         <AnimatePresence mode="wait">

@@ -7,10 +7,10 @@ interface ProgressBarProps {
   totalSteps?: number;
 }
 
-const ProgressBar: React.FC<ProgressBarProps> = ({ progress }) => {
+const ProgressBar: React.FC<ProgressBarProps> = ({ progress, step, totalSteps }) => {
   return (
-    <div className="flex items-center gap-3 mb-4">
-      <div className="flex-1 h-[3px] bg-white/[0.06] rounded-pill overflow-hidden">
+    <div className="flex items-center gap-3 mb-4 relative z-10">
+      <div className="flex-1 h-[3px] bg-white/[0.08] rounded-pill overflow-hidden">
         <motion.div
           className="h-full rounded-pill shimmer"
           initial={{ width: 0 }}
@@ -18,6 +18,11 @@ const ProgressBar: React.FC<ProgressBarProps> = ({ progress }) => {
           transition={{ duration: 0.8, ease: "easeOut" }}
         />
       </div>
+      {step != null && totalSteps != null && (
+        <span className="text-[13px] font-body text-foreground/60 tabular-nums shrink-0">
+          {step}/{totalSteps}
+        </span>
+      )}
     </div>
   );
 };
