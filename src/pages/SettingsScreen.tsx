@@ -93,14 +93,14 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ onPartnerUnlinked }) =>
               </div>
               <button
                 onClick={async () => {
-                  if (!confirm("Are you sure you want to unlink your partner? This cannot be undone.")) return;
+                  if (!confirm("Are you sure you want to unlink your partner? This will log you out.")) return;
                   const { error } = await supabase.rpc("unlink_partner");
                   if (error) {
                     toast.error("Failed to unlink");
                   } else {
-                    toast.success("Partner unlinked");
-                    refetch();
-                    onPartnerUnlinked?.();
+                    toast.success("Partner unlinked. Logging out...");
+                    await supabase.auth.signOut();
+                    navigate("/");
                   }
                 }}
                 className="w-full mt-4 flex items-center justify-center gap-2 py-3 rounded-option glass-card text-sm font-body font-medium text-destructive"
