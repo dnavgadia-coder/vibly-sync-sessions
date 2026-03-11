@@ -72,7 +72,7 @@ export function useDailyQuestion() {
       setLoading(false);
     };
     load();
-  }, [user]);
+  }, [user, refetchCount]);
 
   const submitAnswer = async (index: number, answerText: string) => {
     if (!user || !question) return;
