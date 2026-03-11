@@ -398,11 +398,15 @@ function BottomTabBar({
   setActiveTab,
   navigate,
   isPremium,
+  refetchProfile,
+  refetchQuestion,
 }: {
   activeTab: TabId;
   setActiveTab: (tab: TabId) => void;
   navigate: (path: string) => void;
   isPremium: boolean;
+  refetchProfile: () => void;
+  refetchQuestion: () => void;
 }) {
   const tabs: { id: TabId; label: string; icon: React.ReactNode }[] = [
     { id: "today", label: "Today", icon: <MessageCircle className="w-[18px] h-[18px]" strokeWidth={2} /> },
