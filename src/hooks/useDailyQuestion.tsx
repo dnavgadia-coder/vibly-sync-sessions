@@ -21,6 +21,7 @@ export function useDailyQuestion() {
   const [partnerAnswer, setPartnerAnswer] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [refetchCount, setRefetchCount] = useState(0);
 
   useEffect(() => {
     if (!user) return;
@@ -71,7 +72,7 @@ export function useDailyQuestion() {
       setLoading(false);
     };
     load();
-  }, [user]);
+  }, [user, refetchCount]);
 
   const submitAnswer = async (index: number, answerText: string) => {
     if (!user || !question) return;
@@ -132,5 +133,15 @@ export function useDailyQuestion() {
     setSubmitting(false);
   };
 
-  return { question, myAnswer, partnerAnswered, partnerAnswer, loading, submitting, submitAnswer };
+  const refetch = () => {
+    if (!user) return;
+    setLoading(true);
+    setMyAnswer(null);
+    setPartnerAnswered(false);
+    setPartnerAnswer(null);
+    // Re-trigger the effect by toggling a counter
+    setRefetchCount((c) => c + 1);
+  };
+
+  return { question, myAnswer, partnerAnswered, partnerAnswer, loading, submitting, submitAnswer, refetch };
 }
