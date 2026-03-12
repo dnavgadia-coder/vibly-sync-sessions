@@ -83,6 +83,7 @@ export async function registerPushAndSaveToken(userId: string): Promise<{ ok: bo
       return { ok: false, error: "Permission denied" };
     }
 
+<<<<<<< HEAD
     if (platform === "ios") {
       // On iOS, register with APNs first. Firebase Messaging will intercept the
       // APNs token, exchange it with Firebase servers, and deliver the FCM token
@@ -215,6 +216,38 @@ export async function registerPushAndSaveToken(userId: string): Promise<{ ok: bo
         }, 400);
       });
     }
+=======
+    return new Promise((resolve) => {
+      let settled = false;
+      const finish = (ok: boolean, error?: string) => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(t);
+        void PushNotifications.removeAllListeners().catch(() => {});
+        resolve({ ok, error });
+      };
+      const onToken = async (token: { value: string }) => {
+        // Ensure auth session is active before writing (RLS requires auth.uid() = id)
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session?.user) {
+          finish(false, "Login not ready – please try again in a moment.");
+          return;
+        }
+        const { error } = await supabase.from("profiles").update({ fcm_token: token.value }).eq("id", userId);
+        if (error) {
+          console.warn("[PushReg] FCM token save failed:", error.message, error.code);
+        }
+        finish(!error, error?.message);
+      };
+      const onErr = (err: { error: string }) => finish(false, toFriendlyError(new Error(err.error)));
+      void PushNotifications.addListener("registration", onToken);
+      void PushNotifications.addListener("registrationError", onErr);
+      const t = setTimeout(() => finish(false, toFriendlyError(new Error("Registration timeout"))), 20000);
+      setTimeout(() => {
+        void PushNotifications.register();
+      }, 400);
+    });
+>>>>>>> 5e24dc780a345d62cd04b7821a5ecac30b35beef
   } catch (e) {
     return { ok: false, error: toFriendlyError(e) };
   }
