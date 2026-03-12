@@ -26,33 +26,50 @@ const LAST_FCM_TOKEN_KEY = "vibly_last_fcm_token";
 
 function extractTokenFromEventDetail(detail: unknown): string | null {
   if (!detail) return null;
+  const getToken = (obj: Record<string, unknown>) => {
+    const t = obj.token ?? obj.fcm_token;
+    return typeof t === "string" ? t : null;
+  };
   // Capacitor iOS triggerWindowJSEvent sometimes delivers `detail` as a stringified JSON.
   if (typeof detail === "string") {
     try {
-      const parsed = JSON.parse(detail) as { token?: unknown };
-      return typeof parsed.token === "string" ? parsed.token : null;
+      const parsed = JSON.parse(detail) as Record<string, unknown>;
+      return getToken(parsed);
     } catch {
       return null;
     }
   }
-  if (typeof detail === "object") {
-    const maybeToken = (detail as { token?: unknown }).token;
-    return typeof maybeToken === "string" ? maybeToken : null;
+  if (typeof detail === "object" && detail !== null) {
+    return getToken(detail as Record<string, unknown>);
   }
   return null;
 }
 
-/** 64 hex chars = APNs device token; we must only store FCM tokens (long, non-hex-only). */
+/** 64 hex chars = APNs device token; we must only store FCM tokens in fcm_token. */
 function isLikelyApnsToken(token: string): boolean {
   return /^[0-9A-Fa-f]{64}$/.test(token.trim());
 }
 
-/** Save FCM token to profiles.fcm_token for the given user. No-op if token looks like APNs. */
+/** Save APNs device token to profiles.apns_token (iOS only). */
+async function saveApnsTokenToProfile(userId: string, token: string): Promise<{ ok: boolean; error?: string }> {
+  if (!token?.trim() || !isLikelyApnsToken(token)) return { ok: false, error: "Not an APNs token" };
+  const { error } = await supabase
+    .from("profiles")
+    .update({ apns_token: token.trim() })
+    .eq("id", userId);
+  if (error) {
+    console.error("[Vibly] Failed to save APNs token:", error.message);
+    return { ok: false, error: error.message };
+  }
+  return { ok: true };
+}
+
+/** Save FCM token to profiles.fcm_token only. If token looks like APNs, save to apns_token instead and do not touch fcm_token. */
 async function saveFcmTokenToProfile(userId: string, token: string): Promise<{ ok: boolean; error?: string }> {
   if (!token?.trim()) return { ok: false, error: "Empty token" };
   if (isLikelyApnsToken(token)) {
-    console.warn("[Vibly] Ignoring APNs token (64 hex); only FCM tokens are saved.");
-    return { ok: false, error: "APNs token not saved; need FCM token" };
+    console.warn("[Vibly] Token is APNs (64 hex); saving to apns_token only, not fcm_token.");
+    return saveApnsTokenToProfile(userId, token);
   }
   console.log("[Vibly] Saving FCM token for user:", userId, "tokenLen=", token.trim().length);
   const { data, error } = await supabase
@@ -94,19 +111,15 @@ export function usePushNotificationManager() {
     void autoRegister();
   }, [user?.id]);
 
-  // ── 2. iOS — save FCM token from AppDelegate (CapacitorFCMTokenReceived) ─────
-  // Token can arrive before user is ready; store in ref and flush when user.id is set.
+  // ── 2. iOS — save FCM from AppDelegate (CapacitorFCMTokenReceived); save APNs from plugin "registration" ─────
   useEffect(() => {
     if (!isNative || platform !== "ios") return;
     const onFcmToken = (e: Event) => {
       const token = extractTokenFromEventDetail((e as CustomEvent).detail);
       if (!token?.trim()) return;
-      // Cache token so permission flows can pick it up even if they missed the event timing.
       try {
         localStorage.setItem(LAST_FCM_TOKEN_KEY, token.trim());
-      } catch {
-        // ignore storage errors
-      }
+      } catch {}
       pendingTokenRef.current = token;
       if (user?.id) {
         saveFcmTokenToProfile(user.id, token).then(() => {
@@ -116,6 +129,26 @@ export function usePushNotificationManager() {
     };
     window.addEventListener("CapacitorFCMTokenReceived", onFcmToken);
     return () => window.removeEventListener("CapacitorFCMTokenReceived", onFcmToken);
+  }, [user?.id]);
+
+  // iOS: plugin "registration" delivers APNs token (64 hex) — save to apns_token only, never fcm_token.
+  useEffect(() => {
+    if (!isNative || platform !== "ios" || !user?.id) return;
+    let remove: (() => void) | null = null;
+    const setup = async () => {
+      try {
+        const { PushNotifications } = await import("@capacitor/push-notifications");
+        const handle = await PushNotifications.addListener("registration", async (payload: { value?: string }) => {
+          const token = payload.value?.trim();
+          if (token && isLikelyApnsToken(token)) {
+            await saveApnsTokenToProfile(user.id, token);
+          }
+        });
+        remove = () => handle.remove();
+      } catch {}
+    };
+    void setup();
+    return () => remove?.();
   }, [user?.id]);
 
   // Flush pending FCM token when user becomes available (e.g. token arrived before auth).

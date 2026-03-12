@@ -4,11 +4,18 @@ import Capacitor
 import FirebaseCore
 import FirebaseMessaging
 
+private let kUserDefaultsFcmToken = "vibly_last_fcm_token"
+
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate, MessagingDelegate, UNUserNotificationCenterDelegate {
 
     var window: UIWindow?
-    private var lastFcmToken: String?
+    private var lastFcmToken: String? {
+        didSet {
+            if let t = lastFcmToken { UserDefaults.standard.set(t, forKey: kUserDefaultsFcmToken) }
+        }
+    }
+    private var didRegisterFcmPlugin = false
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Initialise Firebase (reads GoogleService-Info.plist)
@@ -23,6 +30,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate, MessagingDelegate, UNUser
         // The token can arrive before the WebView/JS is fully booted.
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
             self?.trySendLastFcmTokenToJS()
+        }
+        // Register ViblyFcm plugin so JS can call getLastFcmToken() when user enables notifications.
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) { [weak self] in
+            self?.registerViblyFcmPluginIfNeeded()
         }
 
         return true
@@ -43,12 +54,13 @@ class AppDelegate: UIResponder, UIApplicationDelegate, MessagingDelegate, UNUser
 
     /// Send FCM token to the JavaScript layer and optionally print it.
     private func sendFCMTokenToJS(_ token: String) {
+        registerViblyFcmPluginIfNeeded()
         let safeToken = token.replacingOccurrences(of: "\"", with: "\\\"")
         if let rootVC = window?.rootViewController as? CAPBridgeViewController,
            let bridge = rootVC.bridge {
             bridge.triggerWindowJSEvent(
                 eventName: "CapacitorFCMTokenReceived",
-                data: "{\"token\":\"\(safeToken)\"}"
+                data: "{\"fcm_token\":\"\(safeToken)\"}"
             )
         } else {
             print("[Vibly] FCM token: \(token) (bridge not ready yet — will retry after APNs)")
@@ -60,14 +72,23 @@ class AppDelegate: UIResponder, UIApplicationDelegate, MessagingDelegate, UNUser
         }
     }
 
+    private func registerViblyFcmPluginIfNeeded() {
+        guard !didRegisterFcmPlugin,
+              let rootVC = window?.rootViewController as? CAPBridgeViewController,
+              let bridge = rootVC.bridge else { return }
+        bridge.registerPluginInstance(ViblyFcmPlugin())
+        didRegisterFcmPlugin = true
+    }
+
     private func trySendLastFcmTokenToJS() {
+        registerViblyFcmPluginIfNeeded()
         guard let token = lastFcmToken else { return }
         if let rootVC = window?.rootViewController as? CAPBridgeViewController,
            let bridge = rootVC.bridge {
             let safeToken = token.replacingOccurrences(of: "\"", with: "\\\"")
             bridge.triggerWindowJSEvent(
                 eventName: "CapacitorFCMTokenReceived",
-                data: "{\"token\":\"\(safeToken)\"}"
+                data: "{\"fcm_token\":\"\(safeToken)\"}"
             )
         } else {
             // Keep retrying a few times on cold start.
@@ -138,7 +159,13 @@ class AppDelegate: UIResponder, UIApplicationDelegate, MessagingDelegate, UNUser
     func applicationWillResignActive(_ application: UIApplication) {}
     func applicationDidEnterBackground(_ application: UIApplication) {}
     func applicationWillEnterForeground(_ application: UIApplication) {}
-    func applicationDidBecomeActive(_ application: UIApplication) {}
+    func applicationDidBecomeActive(_ application: UIApplication) {
+        // Re-send FCM token when app becomes active so the JS registration flow can receive it
+        // (e.g. user just tapped "Allow" and the WebView is ready).
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
+            self?.trySendLastFcmTokenToJS()
+        }
+    }
     func applicationWillTerminate(_ application: UIApplication) {}
 
     func application(_ app: UIApplication, open url: URL,

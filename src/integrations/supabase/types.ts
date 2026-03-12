@@ -103,6 +103,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          apns_token: string | null
           couple_id: string | null
           created_at: string
           current_mood: string | null
@@ -123,6 +124,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          apns_token?: string | null
           couple_id?: string | null
           created_at?: string
           current_mood?: string | null
@@ -143,6 +145,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          apns_token?: string | null
           couple_id?: string | null
           created_at?: string
           current_mood?: string | null

@@ -2,25 +2,33 @@ import { useCallback } from "react";
 import { Capacitor } from "@capacitor/core";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "./useAuth";
+import ViblyFcm from "@/plugins/ViblyFcm";
 
 const isNative = Capacitor.isNativePlatform();
 const platform = Capacitor.getPlatform(); // "ios" | "android" | "web"
 const LAST_FCM_TOKEN_KEY = "vibly_last_fcm_token";
 
+function isApnsToken(token: string): boolean {
+  return /^[0-9A-Fa-f]{64}$/.test(token.trim());
+}
+
 function extractTokenFromEventDetail(detail: unknown): string | null {
   if (!detail) return null;
+  const getToken = (obj: Record<string, unknown>) => {
+    const t = obj.token ?? obj.fcm_token;
+    return typeof t === "string" ? t : null;
+  };
   // Capacitor iOS triggerWindowJSEvent sometimes delivers `detail` as a stringified JSON.
   if (typeof detail === "string") {
     try {
-      const parsed = JSON.parse(detail) as { token?: unknown };
-      return typeof parsed.token === "string" ? parsed.token : null;
+      const parsed = JSON.parse(detail) as Record<string, unknown>;
+      return getToken(parsed);
     } catch {
       return null;
     }
   }
-  if (typeof detail === "object") {
-    const maybeToken = (detail as { token?: unknown }).token;
-    return typeof maybeToken === "string" ? maybeToken : null;
+  if (typeof detail === "object" && detail !== null) {
+    return getToken(detail as Record<string, unknown>);
   }
   return null;
 }
@@ -83,140 +91,106 @@ export async function registerPushAndSaveToken(userId: string): Promise<{ ok: bo
       return { ok: false, error: "Permission denied" };
     }
 
-<<<<<<< HEAD
+    // On iOS: get FCM token from native plugin (reliable) or from event/cache. Store in profiles.fcm_token.
     if (platform === "ios") {
-      // On iOS, register with APNs first. Firebase Messaging will intercept the
-      // APNs token, exchange it with Firebase servers, and deliver the FCM token
-      // via the native MessagingDelegate → CapacitorFCMTokenReceived notification.
+      // 1) Check cache, then ask native plugin for token (in case it was stored before JS was ready).
+      const cached = (typeof localStorage !== "undefined" && localStorage.getItem(LAST_FCM_TOKEN_KEY))?.trim();
+      if (cached && !isApnsToken(cached)) {
+        const { data, error } = await supabase
+          .from("profiles")
+          .update({ fcm_token: cached })
+          .eq("id", userId)
+          .select("id")
+          .maybeSingle();
+        if (!error && data?.id) return { ok: true };
+      }
+      try {
+        const { token: nativeToken } = await ViblyFcm.getLastFcmToken();
+        const t = (nativeToken ?? "").trim();
+        if (t && !isApnsToken(t)) {
+          const { data, error } = await supabase
+            .from("profiles")
+            .update({ fcm_token: t })
+            .eq("id", userId)
+            .select("id")
+            .maybeSingle();
+          if (!error && data?.id) return { ok: true };
+        }
+      } catch {
+        // Plugin may not be registered yet; continue to polling
+      }
+
+      // 2) Trigger registration and poll native plugin + event + localStorage until we have the token.
       return new Promise((resolve) => {
         let settled = false;
         const finish = (ok: boolean, error?: string) => {
           if (settled) return;
           settled = true;
           clearTimeout(t);
-          clearInterval(pollId);
+          if (pollId !== undefined) clearInterval(pollId);
+          if (pluginPollId !== undefined) clearInterval(pluginPollId);
           window.removeEventListener("CapacitorFCMTokenReceived", onFcmToken as EventListener);
           resolve({ ok, error });
         };
-
-        // If we already cached a token (native may have fired before this listener), use it immediately.
-        try {
-          const cached = localStorage.getItem(LAST_FCM_TOKEN_KEY)?.trim();
-          if (cached && !/^[0-9A-Fa-f]{64}$/.test(cached)) {
-            console.log("[Vibly] (usePushRegistration) using cached FCM token");
-            supabase
-              .from("profiles")
-              .update({ fcm_token: cached })
-              .eq("id", userId)
-              .select("id,fcm_token")
-              .maybeSingle()
-              .then(({ data, error }) => {
-                console.log("[Vibly] (usePushRegistration) cached update result:", { id: data?.id, tokenLen: data?.fcm_token?.length, error: error?.message });
-                finish(!error, error?.message);
-              });
-            // keep going; if something fails we’ll still listen/poll
-          }
-        } catch {
-          // ignore
-        }
-
-        // Listen for the FCM token posted from AppDelegate's MessagingDelegate.
-        // Do not save 64-char hex (APNs token); only save real FCM tokens.
-        const onFcmToken = async (e: CustomEvent<{ token: string }>) => {
-          const token = extractTokenFromEventDetail((e as CustomEvent).detail)?.trim();
-          if (!token) return;
-          if (/^[0-9A-Fa-f]{64}$/.test(token)) {
-            finish(false, "Got device token instead of FCM token. Ensure Firebase SDK is added in Xcode and run on a real device.");
-            return;
-          }
-          try { localStorage.setItem(LAST_FCM_TOKEN_KEY, token); } catch {}
-          console.log("[Vibly] (usePushRegistration) saving FCM token for user:", userId, "len=", token.length);
-          const { data, error } = await supabase
+        const saveAndFinish = (token: string) => {
+          if (!token || isApnsToken(token)) return;
+          try {
+            localStorage.setItem(LAST_FCM_TOKEN_KEY, token);
+          } catch {}
+          void supabase
             .from("profiles")
             .update({ fcm_token: token })
             .eq("id", userId)
-            .select("id,fcm_token")
-            .maybeSingle();
-          console.log("[Vibly] (usePushRegistration) update result:", { id: data?.id, tokenLen: data?.fcm_token?.length, error: error?.message });
-          if (error) {
-            finish(false, error.message);
-            return;
-          }
-          if (!data?.id) {
-            finish(false, "Could not update profile (RLS/auth). Make sure you are logged in and profiles row exists.");
-            return;
-          }
-          finish(true);
+            .select("id")
+            .maybeSingle()
+            .then(({ data, error }) => {
+              if (!error && data?.id) finish(true);
+            });
         };
-
+        const onFcmToken = async (e: CustomEvent) => {
+          const token = extractTokenFromEventDetail((e as CustomEvent).detail)?.trim();
+          if (token) saveAndFinish(token);
+        };
         window.addEventListener("CapacitorFCMTokenReceived", onFcmToken as EventListener);
 
-        // Also poll localStorage in case the native event fired before JS listener was attached.
-        const pollId = setInterval(() => {
+        // Poll native plugin every 1.2s — most reliable way to get the token when user just allowed.
+        let pluginPollId: ReturnType<typeof setInterval> | undefined;
+        pluginPollId = setInterval(() => {
+          ViblyFcm.getLastFcmToken()
+            .then(({ token }) => {
+              if (token?.trim()) saveAndFinish(token.trim());
+            })
+            .catch(() => {});
+        }, 1200);
+
+        // Also poll localStorage (in case event delivered the token).
+        let pollId: ReturnType<typeof setInterval> | undefined;
+        pollId = setInterval(() => {
           try {
-            const cached = localStorage.getItem(LAST_FCM_TOKEN_KEY)?.trim();
-            if (cached && !/^[0-9A-Fa-f]{64}$/.test(cached)) {
+            const c = localStorage.getItem(LAST_FCM_TOKEN_KEY)?.trim();
+            if (c && !isApnsToken(c)) {
               void supabase
                 .from("profiles")
-                .update({ fcm_token: cached })
+                .update({ fcm_token: c })
                 .eq("id", userId)
-                .select("id,fcm_token")
+                .select("id")
                 .maybeSingle()
-                .then(({ data, error }) => {
-                  if (!error && data?.id) finish(true);
+                .then(({ data }) => {
+                  if (data?.id) finish(true);
                 });
             }
-          } catch {
-            // ignore
-          }
-        }, 600);
+          } catch {}
+        }, 500);
 
         const t = setTimeout(
-          () => finish(false, toFriendlyError(new Error("Registration timeout — ensure Push Notifications capability + FirebaseMessaging are set, and try again."))),
+          () => finish(false, toFriendlyError(new Error("Registration timeout – try again in a moment."))),
           45000
         );
-
-        // Trigger APNs registration; Firebase will then exchange for FCM token
-        setTimeout(() => {
-          void PushNotifications.register();
-        }, 400);
-      });
-    } else {
-      // Android: @capacitor/push-notifications returns the FCM token directly
-      return new Promise((resolve) => {
-        let settled = false;
-        const finish = (ok: boolean, error?: string) => {
-          if (settled) return;
-          settled = true;
-          clearTimeout(t);
-          void PushNotifications.removeAllListeners().catch(() => {});
-          resolve({ ok, error });
-        };
-
-        const onToken = async (token: { value: string }) => {
-          const { error } = await supabase
-            .from("profiles")
-            .update({ fcm_token: token.value })
-            .eq("id", userId);
-          finish(!error, error?.message);
-        };
-
-        const onErr = (err: { error: string }) =>
-          finish(false, toFriendlyError(new Error(err.error)));
-
-        void PushNotifications.addListener("registration", onToken);
-        void PushNotifications.addListener("registrationError", onErr);
-        const t = setTimeout(
-          () => finish(false, toFriendlyError(new Error("Registration timeout"))),
-          20000
-        );
-
-        setTimeout(() => {
-          void PushNotifications.register();
-        }, 400);
+        setTimeout(() => void PushNotifications.register(), 300);
       });
     }
-=======
+
+    // Android: plugin "registration" event delivers the FCM token directly.
     return new Promise((resolve) => {
       let settled = false;
       const finish = (ok: boolean, error?: string) => {
@@ -226,28 +200,27 @@ export async function registerPushAndSaveToken(userId: string): Promise<{ ok: bo
         void PushNotifications.removeAllListeners().catch(() => {});
         resolve({ ok, error });
       };
-      const onToken = async (token: { value: string }) => {
-        // Ensure auth session is active before writing (RLS requires auth.uid() = id)
+      const onToken = async (payload: { value: string }) => {
+        const token = payload.value?.trim();
+        if (!token || /^[0-9A-Fa-f]{64}$/.test(token)) {
+          finish(false, "Invalid token received.");
+          return;
+        }
         const { data: { session } } = await supabase.auth.getSession();
         if (!session?.user) {
           finish(false, "Login not ready – please try again in a moment.");
           return;
         }
-        const { error } = await supabase.from("profiles").update({ fcm_token: token.value }).eq("id", userId);
-        if (error) {
-          console.warn("[PushReg] FCM token save failed:", error.message, error.code);
-        }
+        const { error } = await supabase.from("profiles").update({ fcm_token: token }).eq("id", userId);
+        if (error) console.warn("[PushReg] FCM token save failed:", error.message);
         finish(!error, error?.message);
       };
       const onErr = (err: { error: string }) => finish(false, toFriendlyError(new Error(err.error)));
       void PushNotifications.addListener("registration", onToken);
       void PushNotifications.addListener("registrationError", onErr);
       const t = setTimeout(() => finish(false, toFriendlyError(new Error("Registration timeout"))), 20000);
-      setTimeout(() => {
-        void PushNotifications.register();
-      }, 400);
+      setTimeout(() => void PushNotifications.register(), 400);
     });
->>>>>>> 5e24dc780a345d62cd04b7821a5ecac30b35beef
   } catch (e) {
     return { ok: false, error: toFriendlyError(e) };
   }
