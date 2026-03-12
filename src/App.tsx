@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { useKeyboardScroll } from "@/hooks/useKeyboardScroll";
 import { SilentAuthGate } from "@/components/SilentAuthGate";
+import { usePushNotificationManager } from "@/hooks/usePushNotificationManager";
 import EntryRoute from "./pages/EntryRoute";
 import QuizScreen from "./pages/QuizScreen";
 import InsightScreen from "./pages/InsightScreen";
@@ -32,6 +33,13 @@ const KeyboardHandler = () => {
   return null;
 };
 
+// Handles push token refresh, foreground notification toasts, and notification-tap navigation.
+// Must be inside BrowserRouter so it can call useNavigate.
+const PushNotificationManager = () => {
+  usePushNotificationManager();
+  return null;
+};
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
@@ -39,6 +47,7 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <KeyboardHandler />
+        <PushNotificationManager />
         <div className="max-w-[430px] mx-auto min-h-[100dvh] relative overflow-x-hidden">
           <Routes>
             <Route path="/" element={<EntryRoute />} />

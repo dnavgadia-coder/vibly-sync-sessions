@@ -1,11 +1,13 @@
 /**
- * In-App Purchase hook for Vibly (App Store).
+ * In-App Purchase hook for Vibly (App Store + Google Play).
  *
  * 1. Install: npm install cordova-plugin-purchase && npx cap sync
- * 2. In Xcode: App target → Signing & Capabilities → + In-App Purchase
- * 3. In App Store Connect: create products with these IDs (when not using test mode)
+ * 2. iOS — Xcode: App target → Signing & Capabilities → + In-App Purchase
+ *    iOS — App Store Connect: create products with the IDs below
+ * 3. Android — Google Play Console: create subscriptions with the same IDs below
+ *    Android — enable Google Play Billing in your app listing
  *
- * TEST MODE (no App Store Connect needed):
+ * TEST MODE (no store accounts needed):
  * Set VITE_IAP_TEST_MODE=true in .env to use the plugin's test platform.
  * A dialog will ask "Do you want to purchase...? Enter Y to confirm, E to fail."
  */
@@ -19,7 +21,7 @@ export const IAP_PRODUCT_IDS = {
 
 export type IAPPlanId = keyof typeof IAP_PRODUCT_IDS;
 
-/** Enable in .env (VITE_IAP_TEST_MODE=true) to test purchases without App Store Connect. */
+/** Enable in .env (VITE_IAP_TEST_MODE=true) to test purchases without a store account. */
 export const IAP_TEST_MODE = import.meta.env.VITE_IAP_TEST_MODE === "true";
 
 declare global {
@@ -36,13 +38,14 @@ declare global {
         when: () => { receiptsReady: (cb: () => void) => void; verified: (cb: (receipt: unknown) => void) => void };
         owned?: (product: string | { id: string }) => boolean;
       };
-      Platform?: { APPLE_APPSTORE: number; TEST: number };
+      Platform?: { APPLE_APPSTORE: number; GOOGLE_PLAY: number; TEST: number };
       ProductType?: { PAID_SUBSCRIPTION: number };
     };
   }
 }
 
 const isNative = Capacitor.isNativePlatform();
+const currentPlatform = Capacitor.getPlatform(); // "ios" | "android" | "web"
 
 function getStore() {
   return typeof window !== "undefined" ? window.CdvPurchase?.store : undefined;
@@ -51,7 +54,8 @@ function getStore() {
 function getPlatform(): number | undefined {
   const P = typeof window !== "undefined" ? window.CdvPurchase?.Platform : undefined;
   if (!P) return undefined;
-  return IAP_TEST_MODE ? P.TEST : P.APPLE_APPSTORE;
+  if (IAP_TEST_MODE) return P.TEST;
+  return currentPlatform === "android" ? P.GOOGLE_PLAY : P.APPLE_APPSTORE;
 }
 
 function getProductType() {

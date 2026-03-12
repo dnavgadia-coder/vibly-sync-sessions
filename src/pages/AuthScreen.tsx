@@ -82,12 +82,30 @@ const AuthScreen: React.FC = () => {
       }
 
       // 3) User doesn't exist — sign up
-      const { error: signUpErr } = await supabase.auth.signUp({
+      const { data: signUpData, error: signUpErr } = await supabase.auth.signUp({
         email: trimmed,
         password: FALLBACK_PWD,
       });
       if (signUpErr) throw signUpErr;
-
+      const newUserId = signUpData?.user?.id;
+      if (!newUserId) {
+        toast.error("Account created — please check your email to confirm, or try signing in.");
+        return;
+      }
+      // Wait for DB trigger to create the profile row so /name can update it
+      for (let i = 0; i < 15; i++) {
+        const { data: prof } = await supabase
+          .from("profiles")
+          .select("id")
+          .eq("id", newUserId)
+          .maybeSingle();
+        if (prof?.id) {
+          navigate("/name");
+          return;
+        }
+        await new Promise((r) => setTimeout(r, 300));
+      }
+      // Profile still not there; go to /name anyway (NameInputScreen will retry save)
       navigate("/name");
     } catch (err: any) {
       toast.error(err.message || "Something went wrong");

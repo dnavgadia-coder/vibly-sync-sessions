@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Vibly</string>
+    <string name="title_activity_main">Vibly</string>
+    <string name="package_name">com.app.vibly</string>
+    <string name="custom_url_scheme">com.app.vibly</string>
+</resources>
