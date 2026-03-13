@@ -50,12 +50,13 @@ function isLikelyApnsToken(token: string): boolean {
   return /^[0-9A-Fa-f]{64}$/.test(token.trim());
 }
 
-/** Save APNs device token to profiles.apns_token (iOS only). */
+/** Save APNs device token to profiles.fcm_token (iOS only). */
 async function saveApnsTokenToProfile(userId: string, token: string): Promise<{ ok: boolean; error?: string }> {
   if (!token?.trim() || !isLikelyApnsToken(token)) return { ok: false, error: "Not an APNs token" };
+  // Store APNs token in fcm_token field as a fallback (prefixed to distinguish)
   const { error } = await supabase
     .from("profiles")
-    .update({ apns_token: token.trim() })
+    .update({ fcm_token: `apns:${token.trim()}` })
     .eq("id", userId);
   if (error) {
     console.error("[Vibly] Failed to save APNs token:", error.message);
