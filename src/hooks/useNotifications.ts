@@ -122,7 +122,7 @@ export async function createNotificationForUser(
       title,
       body: body ?? null,
       data: data ?? {},
-    });
+    } as any);
   } catch {
     // Non-fatal — still attempt push delivery below
   }
